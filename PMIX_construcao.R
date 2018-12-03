@@ -70,10 +70,18 @@ residuos = function(serie, parametros, lags){
   Q = lags[4]
   lagMax = max(p, P, q, Q)
   
-  phi = matrix(parametros[1 : 12*p], ncol = 12, byrow = T)
-  tht = matrix(parametros[12*p+1 : 12*q], ncol = 12, byrow = T)
-  PHI = matrix(parametros[12*q+1 : 12*P], ncol = 12, byrow = T)
-  THT = matrix(parametros[12*P+1 : 12*Q], ncol = 12, byrow = T)
+  limInf = 1
+  limSup = 12*p
+  phi = matrix(parametros[limInf : limSup], ncol = 12, byrow = T)
+  limInf = limSup + 1
+  limSup = limInf + 12*q - 1
+  tht = matrix(parametros[limInf : limSup], ncol = 12, byrow = T)
+  limInf = 12*q + limInf
+  limSup = limInf + 12*P - 1
+  PHI = matrix(parametros[limInf : limSup], ncol = 12, byrow = T)
+  limInf = 12*P + limInf
+  limSup = limInf + 12*Q - 1
+  THT = matrix(parametros[limInf : limSup], ncol = 12, byrow = T)
   
   residuo = matrix(0, ncol = 12, nrow = nyrs)
   dpRes = numeric(12)
@@ -113,6 +121,7 @@ residuos = function(serie, parametros, lags){
           autoAnual = autoAnual + PHI[j, t] * serie[vlag, t]
         }
       }
+      residuo[v, t] = serie[v, t] - autoMensal - autoAnual + autoMensalAnual
       
       if (q > 0) {
         for(l in 1 : q){
@@ -134,7 +143,7 @@ residuos = function(serie, parametros, lags){
           mmAnual = mmAnual + THT[m, t] * residuo[vlag, t]
         }
       }
-      residuo[v, t] = serie[v, t] - autoMensal - autoAnual + autoMensalAnual + mmMensal + mmAnual - mmMensalAnual
+      residuo[v, t] = residuo[v, t] + mmMensal + mmAnual - mmMensalAnual
     }
   }
   dpRes = apply(residuo, 2, sd)
@@ -170,11 +179,11 @@ otimizacao = function(serie, lags){
   for (i in 1 : (ordem*12)) passo[i, i] = 1
   P0 = rep(0, (ordem * 12))
   P0 = c(rep(1, (p*12)), rep(0, (q*12)), rep(1, (P*12)), rep(0, (Q*12)))
-  #P0 = c(0.883429, 0.704449, 0.775853, 0.360193, 0.841805, 0.879542, 0.855069, 0.9339, 0.958456, 0.927165, 0.897832, 0.844401, 0.697471, -0.547037, -0.681417, 0.162175, -0.588748, 0.678744, 0.876987, 0.710564, 0.164374, -0.975155, 0.41605, 0.953006,0.337275, -0.17647, 0.146482, -0.361297, 0.006054, 0.122416, -0.256529, -0.189037, -0.403412, 0.442112,-0.316306, -0.27799, 0.835418, -1.325291, -0.445427, 0.021704, -0.73116, 0.431762, 0.651614, 0.568605, 0.144673, -1.364278, 0.861876, 1.332262)
+  
   E0 = residuos(serie, P0, lags)$somRes
   
-  while ((difRes > 10 ^-10) && (ciclos <= 100)) {
-    delta = 0
+  while ((difRes > 10 ^-6) && (ciclos <= 100)) {
+      delta = 0
     
     for (i in 1 : (ordem*12)) {
       if (i == 1) {
@@ -197,19 +206,19 @@ otimizacao = function(serie, lags){
     
     if (Ee < E0) {
       if  ((2*(E0 - 2*Ei + Ee)*((E0 - Ei - delta)^2)) < (((E0 - Ee)^2)*delta)) {
-        passo[, (Pdec:((ordem*12)-1))] = passo[, ((Pdec+1):(ordem*12))]
+        if (Pdec < ordem*12)  passo[, (Pdec:((ordem*12)-1))] = passo[, ((Pdec+1):(ordem*12))]
         passo[, (ordem*12)] = sp
         busca = buscaLinear(serie, lags, Pi, sp)
         Pi = busca$ponto
         Ei = busca$E
       }
     }
+    difRes = abs(Ei - E0)
     E0 = Ei
     P0 = Pi
-    #print(E0)
+    print(E0) #######################################################################
     
     ciclos = ciclos + 1
-    difRes = abs(Ei - E0)
   }
   dpRes = residuos(serie, P0, lags)$dpRes
   final = list(ponto = P0, dpRes = dpRes)
@@ -218,7 +227,8 @@ otimizacao = function(serie, lags){
 
 
 secaoAurea = function (serie, lags, ponto, passo) {
-  OURO = (sqrt(5) - 1) / 2
+  #OURO = (sqrt(5) - 1) / 2
+  OURO = 5
   OUROlim = 100
   
   a = -1
@@ -329,12 +339,11 @@ metBrent = function (serie, lags, ponto, passo, buscaDourada) {
   Ev = Ebb
   
   for (iteracoes in 1:MAXIT) {
-    xm = 0.5*(a + b) ###########
-    tol1 = 2*10^-6 * abs(x) + 10^-10
+    xm = (a + b) / 2
+    tol1 = 2*10^-10 * abs(x) + 10^-10
     tol2 = 2 * tol1
     if (abs(x - xm) <= (tol2 - 0.5*(b - a))) {
       xmin = x
-      print(x) ##############
       final = list(ponto = xmin, Ex = Ex)
       return (final)
     }
@@ -423,7 +432,7 @@ serieSint = function(serie, lags, n) {
   parametros = otimizados$ponto
   dpRes = otimizados$dpRes
   #parametros = c(0.883429, 0.704449, 0.775853, 0.360193, 0.841805, 0.879542, 0.855069, 0.9339, 0.958456, 0.927165, 0.897832, 0.844401,
-  #               0.337275, -0.17647, 0.146482, -0.361297, 0.006054, 0.122416, -0.256529, -0.189037, -0.403412, 0.442112,-0.316306, -0.27799,
+  #              0.337275, -0.17647, 0.146482, -0.361297, 0.006054, 0.122416, -0.256529, -0.189037, -0.403412, 0.442112,-0.316306, -0.27799,
   #               0.697471, -0.547037, -0.681417, 0.162175, -0.588748, 0.678744, 0.876987, 0.710564, 0.164374, -0.975155, 0.41605, 0.953006,
   #               0.835418, -1.325291, -0.445427, 0.021704, -0.73116, 0.431762, 0.651614, 0.568605, 0.144673, -1.364278, 0.861876, 1.332262)
   #dpRes = c(0.62, 0.53, 0.68, 0.8, 0.51, 0.36, 0.22, 0.14, 0.22, 0.2, 0.37, 0.36)
@@ -434,10 +443,22 @@ serieSint = function(serie, lags, n) {
   Q = lags[4]
   lagMax = max(p, P, q, Q)
   
-  phi = matrix(parametros[1 : 12*p], ncol = 12, byrow = T)
-  tht = matrix(parametros[12*p+1 : 12*q], ncol = 12, byrow = T)
-  PHI = matrix(parametros[12*q+1 : 12*P], ncol = 12, byrow = T)
-  THT = matrix(parametros[12*P+1 : 12*Q], ncol = 12, byrow = T)
+  limInf = 1
+  limSup = 12*p
+  phi = matrix(parametros[limInf : limSup], ncol = 12, byrow = T)
+  print(phi)
+  limInf = limSup + 1
+  limSup = limInf + 12*q - 1
+  tht = matrix(parametros[limInf : limSup], ncol = 12, byrow = T)
+  print(tht)
+  limInf = 12*q + limInf
+  limSup = limInf + 12*P - 1
+  PHI = matrix(parametros[limInf : limSup], ncol = 12, byrow = T)
+  print(PHI)
+  limInf = 12*P + limInf
+  limSup = limInf + 12*Q - 1
+  THT = matrix(parametros[limInf : limSup], ncol = 12, byrow = T)
+  print(THT)
   
   serieS = matrix(numeric(1), ncol = 12, nrow = n)
   dpH = numeric(12)
