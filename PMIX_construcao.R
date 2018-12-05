@@ -5,17 +5,16 @@ entrada = function(dados){
   leitura = leitura[, -1]
   serieH = matrix(leitura, ncol = 12, byrow = T)
   nH = length(serieH)/12
-  mPerH = apply(serieH, 2, mean)
-  dpPerH = apply(serieH, 2, sd)
-  varPerH = apply(serieH, 2, var)
   
   serieHN = log(serieH)
+  mPerHN = apply(serieHN, 2, mean)
+  dpPerHN = apply(serieHN, 2, sd)
   
-  serieHN = t((t(serieHN) - apply(serieHN, 2, mean)) / apply(serieHN, 2, sd))
+  serieHN = t((t(serieHN) - mPerHN) / dpPerHN)
   
-  facHN = correlograma(serieHN, nH/4, F)
-  
-  return(serieHN)
+  #facHN = correlograma(serieHN, nH/4, F)
+  final = list(serieH = serieH, serieHN = serieHN, mediaHN = mPerHN, dpHN = dpPerHN)
+  return (final)
 }
 
 correlograma = function(serie, lagMax, grafico){
@@ -72,18 +71,28 @@ residuos = function(serie, parametros, lags){
   Q = lags[4]
   lagMax = 12*(max(P, Q) + 1)
   
-  limInf = 1
-  limSup = 12*p
-  phi = matrix(parametros[limInf : limSup], ncol = 12, byrow = T)
-  limInf = limSup + 1
-  limSup = limInf + 12*q - 1
-  tht = matrix(parametros[limInf : limSup], ncol = 12, byrow = T)
-  limInf = 12*q + limInf
-  limSup = limInf + 12*P - 1
-  PHI = matrix(parametros[limInf : limSup], ncol = 12, byrow = T)
-  limInf = 12*P + limInf
-  limSup = limInf + 12*Q - 1
-  THT = matrix(parametros[limInf : limSup], ncol = 12, byrow = T)
+  limInf = 0
+  limSup = 0
+  if (p > 0) {
+    limInf = 1
+    limSup = 12*p
+    phi = matrix(parametros[limInf : limSup], ncol = 12, byrow = T)
+  }
+  if (q > 0) {
+    limInf = limSup + 1
+    limSup = limInf + 12*q - 1
+    tht = matrix(parametros[limInf : limSup], ncol = 12, byrow = T)
+  }
+  if (P > 0) {
+    limInf = limSup + 1
+    limSup = limInf + 12*P - 1
+    PHI = matrix(parametros[limInf : limSup], ncol = 12, byrow = T)
+  }
+  if (Q > 0) {
+    limInf = limSup + 1
+    limSup = limInf + 12*Q - 1
+    THT = matrix(parametros[limInf : limSup], ncol = 12, byrow = T)
+  }
   
   residuoV = numeric(nTotal)
   dpRes = numeric(12)
@@ -186,7 +195,7 @@ powell = function (serie, lags) {
       }
     }
     if (abs(Ei - E0) < eps) {
-      final = list(parametros = Pi, SomRes = Ei)
+      final = list(parametros = Pi, SomRes = Ei, ciclos = ciclos)
       return (final)
     }
     Pe = 2*Pi - P0
@@ -204,13 +213,13 @@ powell = function (serie, lags) {
       }
     }
     if (Ei > E0) {
-      final = list(parametros = Pi, SomRes = Ei)
+      final = list(parametros = Pi, SomRes = Ei, ciclos = ciclos)
       return (final)
     }
     P0 = Pi
     E0 = Ei
   }
-  final = list(parametros = Pi, SomRes = Ei)
+  final = list(parametros = Pi, SomRes = Ei, ciclos = ciclos)
   return (final)
 }
 
@@ -422,27 +431,24 @@ buscaLinear = function (serie, lags, ponto, passo) {
 
 serieSint = function(serie, lags, n) {
   nTotal = 12*n
+  
+  otimizacao = powell(serie, lags)
+  parametros = otimizacao$parametros
+  dpRes = residuos(serie, parametros, lags)$dpRes
+  ciclos = otimizacao$ciclos
+
   p = lags[1]
   P = lags[2]
   q = lags[3]
   Q = lags[4]
-  lagMax = max(p, P, q, Q)
+  lagMax = 12*(max(P, Q) + 1)
   
-  otimizacao = powell(serie, lags)
-  parametros = otimizacao$parametros
-  print(parametros)
-  #parametros = c(0.883429, 0.704449, 0.775853, 0.360193, 0.841805, 0.879542, 0.855069, 0.9339, 0.958456, 0.927165, 0.897832, 0.844401,
-  #              0.337275, -0.17647, 0.146482, -0.361297, 0.006054, 0.122416, -0.256529, -0.189037, -0.403412, 0.442112,-0.316306, -0.27799,
-  #               0.697471, -0.547037, -0.681417, 0.162175, -0.588748, 0.678744, 0.876987, 0.710564, 0.164374, -0.975155, 0.41605, 0.953006,
-  #               0.835418, -1.325291, -0.445427, 0.021704, -0.73116, 0.431762, 0.651614, 0.568605, 0.144673, -1.364278, 0.861876, 1.332262)
-  #dpRes = c(0.62, 0.53, 0.68, 0.8, 0.51, 0.36, 0.22, 0.14, 0.22, 0.2, 0.37, 0.36)
   limInf = 0
-  limSup = 1
+  limSup = 0
   if (p > 0) {
     limInf = 1
     limSup = 12*p
     phi = matrix(parametros[limInf : limSup], ncol = 12, byrow = T)
-    print(phi)
   }
   if (q > 0) {
     limInf = limSup + 1
@@ -450,29 +456,29 @@ serieSint = function(serie, lags, n) {
     tht = matrix(parametros[limInf : limSup], ncol = 12, byrow = T)
   }
   if (P > 0) {
-    limInf = 12*q + limInf
+    limInf = limSup + 1
     limSup = limInf + 12*P - 1
     PHI = matrix(parametros[limInf : limSup], ncol = 12, byrow = T)
-    print(PHI)
   }
   if (Q > 0) {
-    limInf = 12*P + limInf
+    limInf = limSup + 1
     limSup = limInf + 12*Q - 1
     THT = matrix(parametros[limInf : limSup], ncol = 12, byrow = T)
   }
   
   serieS = matrix(numeric(0), ncol = 12, nrow = n)
-  serieSV = numeric(12*n)
+  serieSV = numeric(nTotal)
   dpH = numeric(12)
   dpS = numeric(12)
   mediaH = numeric(12)
   mediaS = numeric(12)
   
-  residuoS = matrix(rnorm(n*12), ncol = 12, nrow = n)
+  residuoS = matrix(rnorm(nTotal), ncol = 12, nrow = n)
   meanAleat = apply(residuoS, 2, mean)
   sdAleat = apply(residuoS, 2, sd)
   residuoS = t((t(residuoS) - meanAleat) / sdAleat)
   residuoS = t(t(residuoS) * dpRes)
+  residuoSV = numeric(nTotal)
   residuoSV = as.vector(t(residuoS))
   
   autoMensal = numeric(1)
@@ -482,7 +488,7 @@ serieSint = function(serie, lags, n) {
   mmAnual = numeric(1)
   mmMensalAnual = numeric(1)
   
-  for(t in ((lagMax + 1) : nTotal)) {
+  for(t in (lagMax : nTotal)) {
     mes = t %% 12
     if(mes == 0) mes = 12
     
@@ -502,7 +508,6 @@ serieSint = function(serie, lags, n) {
           for(k in 1 : P){
             vtlag = (t - k*12) - i
             autoMensalAnual = autoMensalAnual + phi[i, mes]*PHI[k, mes]*serieSV[vtlag]
-            
           }
         }
       }
@@ -513,16 +518,14 @@ serieSint = function(serie, lags, n) {
         autoAnual = autoAnual + PHI[j, mes]*serieSV[vlag]
       }
     }
-    
     if (q > 0) {
       for(l in 1 : q){
         tlag = t - l
-        mmMensal = mmMensal + tht[l, mes] * residuoSV[tlag]
-        
+        mmMensal = mmMensal + tht[l, mes]*residuoSV[tlag]
         if (Q > 0) {
           for(n in 1 : Q){
             vtlag = (t - n*12) - l
-            mmMensalAnual = mmMensalAnual + tht[l, t]*THT[n, t]*residuoSV[vtlag]
+            mmMensalAnual = mmMensalAnual + tht[l, mes]*THT[n, mes]*residuoSV[vtlag]
           }
         }
       }
@@ -530,8 +533,8 @@ serieSint = function(serie, lags, n) {
     
     if (Q > 0) {
       for(m in 1 : Q){
-        vlag = v - m*12
-        mmAnual = mmAnual + THT[m, mes] * residuoSV[vlag]
+        vlag = t - m*12
+        mmAnual = mmAnual + THT[m, mes]*residuoSV[vlag]
       }
     }
     serieSV[t] = autoMensal + autoAnual - autoMensalAnual - mmMensal - mmAnual + mmMensalAnual + residuoSV[t]
@@ -543,6 +546,27 @@ serieSint = function(serie, lags, n) {
   mediaH = apply(serie, 2, mean)
   mediaS = apply(serieS, 2, mean)
   
-  final = list(dpH = dpH, dpS = dpS, mediaH = mediaH, mediaS = mediaS)
+  final = list(serieS = serieS, dpH = dpH, dpS = dpS, mediaH = mediaH, mediaS = mediaS, ciclos = ciclos)
   return(final)
+}
+
+PMIX = function (dados, lags, n) {
+  entrada = entrada(dados)
+  serieHN = entrada$serieHN
+  serieH = entrada$serieH
+  mediaH = apply(serieH, 2, mean)
+  dpH = apply(serieH, 2, sd)
+  mediaHN = entrada$mediaHN
+  dpHN = entrada$dpHN
+  
+  geracao = serieSint(serieHN, lags, n)
+  serieSN = geracao$serieS
+  ciclos = geracao$ciclos
+  serieSN = t((t(serieSN) * dpHN) + mediaHN)
+  serieS = exp(serieSN)
+  mediaS = apply(serieS, 2, mean)
+  dpS = apply(serieS, 2, sd)
+  
+  final = list(serieH = serieH, serieS = serieS, mediaH = mediaH, mediaS = mediaS, dpH = dpH, dpS = dpS, ciclos = ciclos)
+  return (final)
 }
