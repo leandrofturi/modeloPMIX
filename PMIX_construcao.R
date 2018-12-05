@@ -1,6 +1,7 @@
-entrada = function(dados){
+entrada = function(dados) {
   
   #TRATAMENTO DOS DADOS DE ENTRADA
+
   leitura = read.table(dados, header = T, sep = ";", dec = ",")
   leitura = leitura[, -1]
   serieH = matrix(leitura, ncol = 12, byrow = T)
@@ -17,9 +18,10 @@ entrada = function(dados){
   return (final)
 }
 
-correlograma = function(serie, lagMax, grafico){
+correlograma = function(serie, lagMax, grafico) {
   
   #CORRELOGRAMA DE UMA SERIE
+
   mPer = apply(serie, 2, mean)
   dpPer = apply(serie, 2, sd)
   serie = t((t(serie) - mPer))
@@ -28,32 +30,32 @@ correlograma = function(serie, lagMax, grafico){
   intConfianca = 1.96 / sqrt(n)
   fac = matrix(1, nrow = lagMax+1, ncol = 12)
   
-  if(lagMax > n){
+  if (lagMax > n) {
     print("Lag maior que a serie!")
     return();
   }
   
-  for(lag in 1:lagMax){
+  for(lag in 1:lagMax) {
     serieLag = serieV[-(1:lag)] 
     serieAux = serieV[1:((n*12)-lag)]
     product = c(rep(0, lag), serieLag * serieAux)           
     serie = matrix(product, ncol = 12, byrow = T)
     
-    for(mes in 1:12){
+    for(mes in 1:12) {
       meslag = (mes - lag - 1) %% 12 + 1
       fac[(lag+1), mes] = sum(serie[, mes]) / ((n-1) * dpPer[mes] * dpPer[meslag])
     }
   }
   
-  if(grafico){
+  if(grafico) {
     plot(1, type = "n", xlab = "PERIODO", xaxt="n", ylab = "LAG", xlim = c(1, 25), ylim = c(0, lagMax))
     axis(side = 1, at=c(2,4,6,8,10,12,14,16,18,20,22,24), 
          labels=c("Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"))
-    for(mes in 1:12){
+    for(mes in 1:12) {
       segments((mes*2), 0, (mes*2), lagMax)
       segments((mes*2) + intConfianca, 0, (mes*2) + intConfianca, lagMax, lty = 2)
       segments((mes*2) - intConfianca, 0, (mes*2) - intConfianca, lagMax, lty = 2)
-      for(lag in 0:lagMax){
+      for(lag in 0:lagMax) {
         segments((mes*2), lag, ((mes*2) + fac[(lag+1), mes]), lag)
       }
     }
@@ -61,15 +63,19 @@ correlograma = function(serie, lagMax, grafico){
   return(fac)
 }
 
-residuos = function(serie, parametros, lags){
+residuos = function(serie, parametros, lags) {
+
+  #CALCULO DOS RESIDUOS E DO DESVIO-PADRAO
+
   nTotal = length(serie)
-  serieV = numeric(nTotal)
-  serieV = as.vector(t(serie))
   p = lags[1]
-  P = lags[2]
-  q = lags[3]
+  q = lags[2]
+  P = lags[3]
   Q = lags[4]
   lagMax = 12*(max(P, Q) + 1)
+
+  serieV = numeric(nTotal)
+  serieV = as.vector(t(serie))
   
   limInf = 0
   limSup = 0
@@ -96,12 +102,6 @@ residuos = function(serie, parametros, lags){
   
   residuoV = numeric(nTotal)
   dpRes = numeric(12)
-  autoMensal = numeric(1)
-  autoAnual = numeric(1)
-  autoMensalAnual = numeric(1)
-  mmMensal = numeric(1)
-  mmAnual = numeric(1)
-  mmMensalAnual = numeric(1)
   
   for(t in (lagMax : nTotal)) {
     mes = t %% 12
@@ -157,22 +157,25 @@ residuos = function(serie, parametros, lags){
   residuo = matrix(residuoV, ncol = 12, byrow = T)
   
   dpRes = apply(residuo, 2, sd)
-  somQuadRes = sum(residuo ^ 2)
+  somQuadRes = sum(residuo^2)
   
   final = list(somRes = somQuadRes, dpRes = dpRes)
   return(final)
 }
 
-powell = function (serie, lags) {
+powell = function (serie, lags, Pinicial) {
+
+  #ALGORITMO DE POWELL
   
   eps = 10^-5
+
   p = lags[1]
-  P = lags[2]
-  q = lags[3]
+  q = lags[2]
+  P = lags[3]
   Q = lags[4]
   ordem = sum(lags)
   
-  P0 = c(rep(0, (p*12)), rep(0, (q*12)), rep(0, (P*12)), rep(0, (Q*12)))
+  P0 = Pinicial
   passo = matrix(numeric(1), ncol = (ordem*12), nrow = (ordem*12))
   for (i in 1 : (ordem*12)) passo[i, i] = 1
   E0 = residuos(serie, P0, lags)$somRes
@@ -225,8 +228,10 @@ powell = function (serie, lags) {
 
 
 secaoAurea = function (serie, lags, ponto, passo) {
+
+  #METODO DA SECAO AUREA PARA OBTENCAO DE TRES PONTOS BONS DENTRO DO INTERVALO BUSCADO
+
   OURO = (sqrt(5) - 1) / 2
-  OURO = 5
   OUROlim = 100
   
   a = -1
@@ -317,6 +322,9 @@ secaoAurea = function (serie, lags, ponto, passo) {
 }
 
 metBrent = function (serie, lags, ponto, passo, buscaDourada) {
+
+  #METODO DE BRENT PARA OBTENCAO DO TAMANHO DO PASSO
+
   OURO = (sqrt(5) - 1) / 2
   MAXIT = 100
   ab = buscaDourada$a
@@ -419,6 +427,9 @@ metBrent = function (serie, lags, ponto, passo, buscaDourada) {
 }
 
 buscaLinear = function (serie, lags, ponto, passo) {
+
+  #FUNCAO GERAL PARA O CALCULO DO TAMANHO DO PASSO
+
   buscaDourada = secaoAurea(serie, lags, ponto, passo)
   metBrent = metBrent(serie, lags, ponto, passo, buscaDourada)
   
@@ -429,20 +440,17 @@ buscaLinear = function (serie, lags, ponto, passo) {
   return (final)
 }
 
-serieSint = function(serie, lags, n) {
-  nTotal = 12*n
-  
-  otimizacao = powell(serie, lags)
-  parametros = otimizacao$parametros
-  dpRes = residuos(serie, parametros, lags)$dpRes
-  ciclos = otimizacao$ciclos
+serieSint = function(parametros, dpRes, lags, n) {
 
+  #GERACAO DA SERIE SINTETICA
+
+  nTotal = 12*n
   p = lags[1]
-  P = lags[2]
-  q = lags[3]
+  q = lags[2]
+  P = lags[3]
   Q = lags[4]
   lagMax = 12*(max(P, Q) + 1)
-  
+
   limInf = 0
   limSup = 0
   if (p > 0) {
@@ -541,16 +549,16 @@ serieSint = function(serie, lags, n) {
   }
   serieS = matrix(serieSV, ncol = 12, byrow = T)
   
-  dpH = apply(serie, 2, sd)
-  dpS = apply(serieS, 2, sd)
-  mediaH = apply(serie, 2, mean)
-  mediaS = apply(serieS, 2, mean)
-  
-  final = list(serieS = serieS, dpH = dpH, dpS = dpS, mediaH = mediaH, mediaS = mediaS, ciclos = ciclos)
-  return(final)
+  return(serieS)
 }
 
 PMIX = function (dados, lags, n) {
+
+  #FUNCAO GERAL DO MODELO PMIX
+
+  numParametros = sum(lags)*12
+  Pinicial = rep(0,numParametros)
+
   entrada = entrada(dados)
   serieHN = entrada$serieHN
   serieH = entrada$serieH
@@ -559,9 +567,13 @@ PMIX = function (dados, lags, n) {
   mediaHN = entrada$mediaHN
   dpHN = entrada$dpHN
   
-  geracao = serieSint(serieHN, lags, n)
-  serieSN = geracao$serieS
-  ciclos = geracao$ciclos
+  otimizacao = powell(serieHN, lags, Pinicial)
+  parametros = otimizacao$parametros
+  ciclos = otimizacao$ciclos
+  dpRes = residuos(serieHN, parametros, lags)$dpRes
+  ciclos = otimizacao$ciclos
+
+  serieSN = serieSint(parametros, dpRes, lags, n)
   serieSN = t((t(serieSN) * dpHN) + mediaHN)
   serieS = exp(serieSN)
   mediaS = apply(serieS, 2, mean)
