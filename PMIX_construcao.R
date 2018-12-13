@@ -47,7 +47,7 @@ correlograma = function(serie, lagMax, grafico) {
   }
   
   if(grafico) {
-    plot(1, type = "n", xlab = "PERIODO", xaxt="n", ylab = "LAG", xlim = c(1, 25), ylim = c(0, lagMax))
+    plot(1, type = "n", xlab = "Período", xaxt="n", ylab = "Lag", xlim = c(1, 25), ylim = c(0, lagMax))
     axis(side = 1, at=c(2,4,6,8,10,12,14,16,18,20,22,24), 
          labels=c("Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"))
     for(mes in 1:12) {
@@ -165,7 +165,7 @@ residuos = function(serie, parametros, lags) {
 powell = function (serie, lags, Pinicial) {
   
   #ALGORITMO DE POWELL
-  
+  MAXITERACOES = 500
   eps = 10^-5
   
   p = lags[1]
@@ -181,7 +181,7 @@ powell = function (serie, lags, Pinicial) {
   Pi = P0
   Ei = E0
   
-  for (ciclos in (1 : 100)) {
+  for (ciclos in (1 : MAXITERACOES)) {
     Pdec = 1
     delta = 0
     print(E0)
@@ -231,7 +231,6 @@ secaoAurea = function (serie, lags, ponto, passo) {
   #METODO DA SECAO AUREA PARA OBTENCAO DE TRES PONTOS BONS DENTRO DO INTERVALO BUSCADO
   
   OURO = (sqrt(5) - 1) / 2
-  OURO = 5
   OUROlim = 100
   
   a = -1
@@ -256,7 +255,7 @@ secaoAurea = function (serie, lags, ponto, passo) {
   
   while (Eb > Ec) {
     finalAnt = list(a = a, Ea = Ea, b = b, Eb = Eb, c = c, Ec = Ec)
-    for (ciclos in 1:100) {
+    for (ciclos in 1:1000) {
       r = (b - a)*(Eb - Ec)
       q = (b - c)*(Eb - Ea)
       if ((q - r) >= 0) div = 2 * (max(abs(q - r), 10^-20))
@@ -331,7 +330,6 @@ metBrent = function (serie, lags, ponto, passo, buscaDourada) {
   bb = buscaDourada$b
   Ebb = buscaDourada$Eb
   cb = buscaDourada$c
-  
   if (ab < cb) {
     a = ab
     b = cb
@@ -547,7 +545,8 @@ PMIX = function (dados, lags, n, seriePlot) {
   
   numParametros = sum(lags)*12
   Pinicial = rep(0,numParametros)
-  
+  #Pinicial = c(rep(1,12),rep(0,12),rep(1,12),rep(0,12))
+
   entrada = entrada(dados)
   serieHN = entrada$serieHN
   serieH = entrada$serieH
@@ -580,6 +579,9 @@ PMIX = function (dados, lags, n, seriePlot) {
   data = format(Sys.time(), "%F %Hh%M")
   data = paste0("PMIX (", p, ", ", q, ", ", P, ", ", Q, ") ", data)
   dir.create(file.path("./", data))
+  
+  limInf = 0
+  limSup = 0
   if (p > 0) {
     limInf = 1
     limSup = 12*p
@@ -587,8 +589,6 @@ PMIX = function (dados, lags, n, seriePlot) {
   }
   else {
     p = 1
-    limInf = 1
-    limSup = 12*p
     phi = matrix(rep(0,12), ncol = 12, byrow = T)
   }
   
@@ -599,8 +599,6 @@ PMIX = function (dados, lags, n, seriePlot) {
   }
   else {
     q = 1
-    limInf = limSup + 1
-    limSup = limInf + 12*q - 1
     tht = matrix(rep(0,12), ncol = 12, byrow = T)
   }
   
@@ -611,8 +609,6 @@ PMIX = function (dados, lags, n, seriePlot) {
   }
   else {
     P = 1
-    limInf = limSup + 1
-    limSup = limInf + 12*P - 1
     PHI = matrix(rep(0,12), ncol = 12, byrow = T)
   }
   
@@ -623,8 +619,6 @@ PMIX = function (dados, lags, n, seriePlot) {
   }
   else {
     Q = 1
-    limInf = limSup + 1
-    limSup = limInf + 12*Q - 1
     THT = matrix(rep(0,12), ncol = 12, byrow = T)
   }
   
@@ -648,9 +642,9 @@ PMIX = function (dados, lags, n, seriePlot) {
   colnames(tabelaDadosS) = meses
   write.csv2(tabelaDadosS, paste0(data, "/Autocorrelacao Sintetica.csv"))
   
-  tabelaParametros = data.frame(mediaH, dpH, mediaS, dpS, t(phi), t(PHI), t(tht), t(THT))
+  tabelaParametros = data.frame(mediaH, dpH, mediaS, dpS, t(phi), t(PHI), t(tht), t(THT), dpRes)
   rownames(tabelaParametros) = meses
-  colnames(tabelaParametros) = c("MEDIA HIST", "SD HIST", "MEDIA SINT", "SD SINT", phiNome, PHINome, thtNome, THTNome)
+  colnames(tabelaParametros) = c("MEDIA HIST", "SD HIST", "MEDIA SINT", "SD SINT", phiNome, PHINome, thtNome, THTNome, "dpRes")
   write.csv2(tabelaParametros, paste0(data, "/Parametros.csv"))
   
   tabelaserieS = data.frame(serieS)
@@ -660,8 +654,9 @@ PMIX = function (dados, lags, n, seriePlot) {
   
   if (seriePlot){
     par(lwd = 0.5, col = 'grey')
-    plot(main = "Serie Sintética", mediaS, col= 'red', xlim = c(1,12), ylim = c(0, max(serieS)),
-         xlab = "meses", ylab = "valores gerados", type = "n")
+    plot(mediaS, col= 'red', xlim = c(1,12), ylim = c(0, max(serieS)),
+         xlab = "Período (mensal)", ylab = "Vazão (m^3/s)", type = "n")
+    
     for(ano in 1:n){
       points(1:12, serieS[ano, ])
     }
