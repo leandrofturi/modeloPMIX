@@ -1,7 +1,5 @@
 serieSint = function(parametros, dpRes, lags, n) {
   
-  #GERACAO DA SERIE SINTETICA
-  
   nTotal = 12*n
   p = lags[1]
   q = lags[2]
