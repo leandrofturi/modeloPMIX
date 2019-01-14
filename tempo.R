@@ -1,20 +1,20 @@
-source('inicializacao.R')
+source('restricoes.R')
 
 roleta = function (avaliacoes) {
   giro = runif (1,0,1)
-  giro = giro
-  avaliacoes = avaliacoes / (sum (avaliacoes))
+  avaliacoes = sort (avaliacoes / (sum (avaliacoes)))
   
-  for (i in (1:(length(avaliacoes)-1))) {
+  for (i in (1:length(avaliacoes))) {
     if (avaliacoes[i] >= giro)
       return (i)
+      
     
     else
       avaliacoes[i+1] = avaliacoes[i] + avaliacoes[i+1]
   }
 }
 
-cruzamento = function (pai1, pai2) {
+cruzamentoDoisPontos = function (pai1, pai2) { #NAO E UTIL
   ponto1 = round (runif (1, 2, (TAM_INDIVIDUO-1)))
   ponto2 = round (runif (1, (ponto1+1), TAM_INDIVIDUO))
   
@@ -25,13 +25,38 @@ cruzamento = function (pai1, pai2) {
   return (final)
 }
 
+cruzamentoUniforme = function (pai1, pai2) {
+  probCruzamento = runif (1, 0, 1)
+  if (probCruzamento > 0.75) {
+    final = list (filho1 = pai1, filho2 = pai2)
+    return (final)
+  }
+    
+  pontos = round (runif (TAM_INDIVIDUO, 0, 1))
+  
+  filho1 = numeric (TAM_INDIVIDUO)
+  filho2 = numeric (TAM_INDIVIDUO)
+  for (i in (1 : TAM_INDIVIDUO)) {
+    if (pontos[i] == 1) {
+      filho1[i] = pai2[i]
+      filho2[i] = pai1[i]
+    }
+    else {
+      filho1[i] = pai1[i]
+      filho2[i] = pai2[i]
+    }
+  }
+  
+  final = list (filho1 = filho1, filho2 = filho2)
+  return (final)
+}
+
 mutacao = function (individuo) {
   troca = runif (1,0,1)
   
-  if (troca <= 0.005) {
-    pos = runif (1,0,TAM_INDIVIDUO)
-    if (individuo[pos] == 0) individuo[pos] = 1
-    else individuo[pos] = 0
+  if (troca <= 0.004) {
+    pos = runif (1,1,TAM_INDIVIDUO)
+    individuo[pos] = 1 - individuo[pos]
   }
   
   return (individuo)
@@ -46,13 +71,11 @@ GA = function (dados, lags) {
   
   avaliacoes = avaliacao (serie, lags, populacao)
   
-  for (t in (1:10)) {
+  for (t in (1:5000)) {
     p1 = roleta (avaliacoes)
     p2 = roleta (avaliacoes)
-    print(p1)
-    print(p2)
     
-    novaGeracao = cruzamento (populacao[p1, ], populacao[p2, ])
+    novaGeracao = cruzamentoUniforme (populacao[p1, ], populacao[p2, ])
     filho1 = novaGeracao$filho1
     filho2 = novaGeracao$filho2
     
@@ -63,18 +86,19 @@ GA = function (dados, lags) {
     populacao[p2, ] = filho2
     
     avaliacoes = avaliacao (serie, lags, populacao)
-    #print(max(avaliacoes))
-    
+
+    print(max (avaliacoes))
   }
+  
 }
 
 avaliacao = function (serie, lags, populacao) {
   
   popParam = t (apply (populacao, 1, cortaParametros))
   avaliacao = apply (popParam, 1, function (parametros) 
-    residuos (serie, parametros, lags)$somRes)
+                                    residuos (serie, parametros, lags)$somRes)
   
-  avaliacao = 10000 / (avaliacao + 10)
+  avaliacao = 1 / (avaliacao + 10)
   
   return (avaliacao)
 }

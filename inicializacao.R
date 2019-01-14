@@ -2,8 +2,8 @@ source('sumQuadRes.R')
 source('entrada.R')
 
 PRECISAO = 11 + 1
-TAM_POPULACAO = 50
-TAM_INDIVIDUO = 144
+TAM_POPULACAO = 60
+TAM_INDIVIDUO = 0
 
 inicializaPop = function(tamIndividuo) {
   populacao = matrix (round (runif (tamIndividuo * TAM_POPULACAO, 0,1)), nrow = TAM_POPULACAO)
