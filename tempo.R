@@ -7,7 +7,6 @@ roleta = function (avaliacoes) {
   for (i in (1:length(avaliacoes))) {
     if (avaliacoes[i] >= giro)
       return (i)
-      
     
     else
       avaliacoes[i+1] = avaliacoes[i] + avaliacoes[i+1]
@@ -66,12 +65,12 @@ GA = function (dados, lags) {
   qntParam = sum(lags)
   tamIndividuo = qntParam*12*PRECISAO
   TAM_INDIVIDUO <<- tamIndividuo
-  populacao = inicializaPop (tamIndividuo)
   serie = entrada (dados)$serieHN
+  populacao = inicializaPop (serie, lags)
   
   avaliacoes = avaliacao (serie, lags, populacao)
   
-  for (t in (1:5000)) {
+  for (t in (1:500)) {
     p1 = roleta (avaliacoes)
     p2 = roleta (avaliacoes)
     
@@ -88,6 +87,21 @@ GA = function (dados, lags) {
     avaliacoes = avaliacao (serie, lags, populacao)
 
     print(max (avaliacoes))
+  }
+  
+}
+
+BRKGA = function (dados, lags) {
+  qntParam = sum(lags)
+  tamIndividuo = qntParam*12*PRECISAO
+  TAM_INDIVIDUO <<- tamIndividuo
+  serie = entrada (dados)$serieHN
+  populacao = inicializaPop (serie, lags)
+  
+  avaliacoes = avaliacao (serie, lags, populacao)
+  
+  for (t in (1:500)) {
+    
   }
   
 }
