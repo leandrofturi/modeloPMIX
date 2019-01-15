@@ -1,8 +1,7 @@
-source('sumQuadRes.R')
 source('entrada.R')
 
-PRECISAO = 11 + 1
-TAM_POPULACAO = 60
+PRECISAO = 10 + 1
+TAM_POPULACAO = 50
 TAM_INDIVIDUO = 0
 
 binParaDec = function (b) {

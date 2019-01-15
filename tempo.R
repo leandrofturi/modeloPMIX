@@ -1,4 +1,6 @@
 source('restricoes.R')
+source('sumQuadRes.R')
+source('cenarioSint.R')
 
 roleta = function (avaliacoes) {
   giro = runif (1,0,1)
@@ -88,7 +90,6 @@ GA = function (dados, lags) {
 
     print(max (avaliacoes))
   }
-  
 }
 
 BRKGA = function (dados, lags) {
@@ -100,10 +101,45 @@ BRKGA = function (dados, lags) {
   
   avaliacoes = avaliacao (serie, lags, populacao)
   
+  novaPop = populacao
   for (t in (1:500)) {
+    ordemAv = order (avaliacoes, decreasing = T)
+    p = round (0.6*TAM_POPULACAO)
+    novaPop[1:p, ] = populacao[ordemAv[1:p], ]
+    p = p + 1
+    while (p <= TAM_POPULACAO) {
+      posPai = roleta (avaliacoes[ordemAv[1:(round (0.6*TAM_POPULACAO))]])
+      pai1 = populacao[posPai, ]
+      posPai = roleta (avaliacoes)
+      pai2 = populacao[posPai, ]
+      
+      filhos = cruzamentoUniforme (pai1, pai2)
+      filho1 = mutacao (filhos$filho1)
+      filho2 = mutacao (filhos$filho2)
+      
+      novaPop[p, ] = filho1
+      novaPop[p + 1, ] = filho2
+      
+      p = p + 2
+    }
     
+    avaliacoes = avaliacao (serie, lags, populacao)
+    print (t)
   }
+  ordemAv = order (avaliacoes, decreasing = T)
+  paramFinal = cortaParametros (populacao[ordemAv[1], ])
   
+  sumRes = residuos (serie, paramFinal, lags)
+  sumQuadRes = sumRes$somRes
+  dpRes = sumRes$dpRes
+  
+  serieSint = serieSint (paramFinal, dpRes, lags, 10000)
+  media = apply(serieSint, 2, mean)
+  dp = apply(serieSint, 2, sd)
+  
+  final = list (sumQuadRes = sumQuadRes, dpRes = dpRes, media = media, dp = dp)
+  
+  return (final)
 }
 
 avaliacao = function (serie, lags, populacao) {
