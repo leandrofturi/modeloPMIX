@@ -55,7 +55,7 @@ cruzamentoUniforme = function (pai1, pai2) {
 mutacao = function (individuo) {
   troca = runif (1,0,1)
   
-  if (troca <= 0.004) {
+  if (troca <= 0.05) {
     pos = runif (1,1,TAM_INDIVIDUO)
     individuo[pos] = 1 - individuo[pos]
   }
@@ -102,13 +102,13 @@ BRKGA = function (dados, lags) {
   avaliacoes = avaliacao (serie, lags, populacao)
   
   novaPop = populacao
-  for (t in (1:500)) {
+  for (t in (1:100)) {
     ordemAv = order (avaliacoes, decreasing = T)
-    p = round (0.6*TAM_POPULACAO)
+    p = round (0.4*TAM_POPULACAO)
     novaPop[1:p, ] = populacao[ordemAv[1:p], ]
     p = p + 1
     while (p <= TAM_POPULACAO) {
-      posPai = roleta (avaliacoes[ordemAv[1:(round (0.6*TAM_POPULACAO))]])
+      posPai = roleta (avaliacoes[ordemAv[1:(round (0.4*TAM_POPULACAO))]])
       pai1 = populacao[posPai, ]
       posPai = roleta (avaliacoes)
       pai2 = populacao[posPai, ]
@@ -117,10 +117,11 @@ BRKGA = function (dados, lags) {
       filho1 = mutacao (filhos$filho1)
       filho2 = mutacao (filhos$filho2)
       
-      novaPop[p, ] = filho1
-      novaPop[p + 1, ] = filho2
-      
-      p = p + 2
+      if ((testeIndividuo (filho1, serie, lags)) && (testeIndividuo (filho2, serie, lags))) {
+        novaPop[p, ] = filho1
+        novaPop[p + 1, ] = filho2
+        p = p + 2
+      }
     }
     
     avaliacoes = avaliacao (serie, lags, populacao)

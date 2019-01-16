@@ -40,3 +40,11 @@ correlograma = function(serie, lagMax, grafico) {
   }
   return(fac)
 }
+
+correlogramaAnual = function(serie, lagMax, grafico) {
+  serieAnual = apply (serie, 1, sum)
+  facAnual = acf (serieAnual, lag.max = lagMax, type = c("correlation"), plot = F)
+  facAnual = as.numeric(as.character(facAnual$acf))
+  
+  return (facAnual)
+}
