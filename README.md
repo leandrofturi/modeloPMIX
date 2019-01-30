@@ -8,3 +8,4 @@ e de erros médios padrão e de médias absolutas de erros percentuais.
 
 ### Algoritmos utilizados
 * Algoritmo de Powell
+* Algoritmo genético tipo NSGA-II
