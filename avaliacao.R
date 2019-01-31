@@ -21,28 +21,19 @@ momentos = function (serie, parametros, lags) {
   return (final)
 }
 
-multiObjetivo = function (dados, populacao, avaliacoes) {
-  serieHN = entrada (dados)$serieHN
+avaliacao = function (serieHN, avaliacoesInd) {
   mediaH = apply(serieHN, 2, mean)
   dpH = apply(serieHN, 2, sd)
   facMensalH = correlograma (serieHN, lagMENSAL, F)
   facAnualH = correlogramaAnual (serieHN, lagANUAL)
   
-  medias = sapply(pop$avaliacao, function(x)
-                                 1 / (1 + abs (x$media)))
-  desvios = sapply(pop$avaliacao, function(x)
-                                  2 / (1 + abs (x$dp)))
-  facAnuais = sapply(pop$avaliacao, function(x)
-                                    (1 + abs (facAnualH)) / (1 + abs (x$facAnual)))
-  facMensais = sapply(pop$avaliacao, function(x)
-                                     (1 + abs (facMensalH)) / (1 + abs (x$facMensal)))
-  somRes = sapply(pop$avaliacao, function(x)
-                                 1 / (1 + x$somRes))
+  funcMedia = sum (1 / (1 + abs (avaliacoesInd$media))) / 12
+  funcDesvio = sum (2 / (1 + abs (avaliacoesInd$dp))) / 12
+  funcFacAnual = sum (1 / (1 + abs (facAnualH - avaliacoesInd$facAnual))) / (lagANUAL + 1)
+  funcFacMensal = sum (1 / (1 + abs (facMensalH - avaliacoesInd$facMensal))) / ((lagMENSAL*12) + 1)
+  somRes = 1 / (1 + avaliacoesInd$somRes)
   
-  final = list (media = medias, dp = desvios, facAnual = facAnuais, facMensal = facMensais, somRes = somRes)
+  final = list (media = funcMedia, dp = funcDesvio, facAnual = funcFacAnual, facMensal = funcFacMensal, somRes = somRes)
   
   return (final)
 }
-
-#sapply(pop$avaliacao, function(x) (x$media)) pega todos e coloca numa matriz
-#pop$avalioacao[[1]]$media

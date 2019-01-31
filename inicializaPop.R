@@ -11,7 +11,7 @@ geraIndividuo = function (nINDIVIDUO) {
   return (individuo)
 }
 
-geraPopulacao = function (serie, lags) {
+geraPopulacao = function (serieHN, lags) {
   nINDIVIDUO <<- (sum (lags))*12
   populacao = matrix (numeric(1), ncol = nINDIVIDUO, nrow = nPOPULACAO)
   avaliacao = list ()
@@ -23,13 +23,13 @@ geraPopulacao = function (serie, lags) {
     novoIndividuo = geraIndividuo (nINDIVIDUO)
     
     if ((prod(novoIndividuo) <= 1) && (prod(novoIndividuo) >= -1)) { # TESTE DO PRODUTO
-      momentos = momentos (serie, novoIndividuo, lags)
+      momentos = momentos (serieHN, novoIndividuo, lags)
       
       if (!((is.nan (momentos$media)) || (is.nan (momentos$dp)) || (is.infinite (momentos$media)) || (is.infinite (momentos$dp)))) {
         p = p + 1
         populacao[p, ] = novoIndividuo
-        avaliacao[[p]] = momentos
-        
+        av = avaliacao (serieHN, momentos)
+        avaliacao[[p]] = av
         print (p)
       }
     }
@@ -39,4 +39,4 @@ geraPopulacao = function (serie, lags) {
 }
 
 #pop$avalioacao[[1]]$media
-
+#sapply(pop$avaliacao, function(x) (x$media)) pega todos e coloca numa matriz

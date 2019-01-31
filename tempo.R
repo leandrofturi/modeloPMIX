@@ -8,16 +8,7 @@ crossoverBLX = function (pai1, pai2) {
 }
 
 mutacao = function (individuo) {
-  r = runif (1, 0, 1)
-  novoIndividuo = r*(individuoMAX - individuoMIN)
+  novoIndividuo = runif (1, individuoMIN, individuoMAX)
   
   return (novoIndividuo)
-}
-
-FNS = function (populacao, avaliacoes) {
-  
-}
-
-CDA = function (individuos, avaliacoes) {
-  
 }
