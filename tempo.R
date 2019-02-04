@@ -1,9 +1,6 @@
-<<<<<<< HEAD
 source ('entrada.R')
 source ('inicializaPop.R')
 source ('mecanismos.R')
-
-
 
 NSGA = function (dados, lags) {
   serieHN = entrada (dados)$serieHN
@@ -13,7 +10,7 @@ NSGA = function (dados, lags) {
   populacao = matrix (numeric (0), ncol = nINDIVIDUO, nrow = nPOPULACAO)
   avaliacao = list ()
   
-  for (tempo in 1:500) {
+  for (tempo in 1:5) {
     novaPop = geraPopulacao (serieHN, lags, F, pop)
     populacaoTotal[(1:nPOPULACAO), ] = pop$populacao
     populacaoTotal[((nPOPULACAO+1):(2*nPOPULACAO)), ] = novaPop$populacao
@@ -30,19 +27,4 @@ NSGA = function (dados, lags) {
   
   pop = CCO (pop)
   return (pop)
-=======
-crossoverBLX = function (pai1, pai2) {
-  ALFA = 0.5
-  beta = runif (nINDIVIDUO, -ALFA, 1+ALFA)
-  homog = round (runif (nINDIVIDUO, 0, 1))
-  
-  filho = pai1 + homog*beta*(pai2 - pai1)
-  return (filho)
-}
-
-mutacao = function (individuo) {
-  novoIndividuo = runif (1, individuoMIN, individuoMAX)
-  
-  return (novoIndividuo)
->>>>>>> a15340e948bdac63077d5101b05d29f2e0be66c5
 }

@@ -1,10 +1,10 @@
-<<<<<<< HEAD
 source ('avaliacao.R')
 
 FNS = function (pop) {
   npIndividual = sapply (pop$avaliacao, function (x)
     dominanciaCompleta (x, pop))
   np = apply (npIndividual, 1, sum)
+  np = np-1 #pois ele e comparado consigo mesmo
   rank = ranqueamento (np)
   
   return (rank)
@@ -12,9 +12,9 @@ FNS = function (pop) {
 
 dominanciaCompleta = function (avaliacoes, pop) {
   SpIndividual = sapply (pop$avaliacao, function (x)
-    if ((avaliacoes$media < x$media) && (avaliacoes$dp < x$dp) && 
-        (avaliacoes$facAnual < x$facAnual) && (avaliacoes$facMensal < x$facMensal) && 
-        (avaliacoes$somRes < x$somRes)) {
+    if ((avaliacoes$media >= x$media) && (avaliacoes$dp >= x$dp) && 
+        (avaliacoes$facAnual >= x$facAnual) && (avaliacoes$facMensal >= x$facMensal) && 
+        (avaliacoes$somRes >= x$somRes)) {
       return (1)
     }
     else
@@ -43,34 +43,35 @@ CDA = function (pop) {
   CD = numeric (n)
   diversidade = numeric (n)
   nObjetivos = 5
-  CDmat = matrix (numeric (0), ncol = nPOPULACAO, nrow = nObjetivos)
+  CDmat = matrix (numeric (0), ncol = n, nrow = nObjetivos)
   
   medias = sapply (pop$avaliacao, function(x) (x$media))
   desvios = sapply (pop$avaliacao, function(x) (x$dp))
-  facMensais = sapply (pop$avaliacao, function(x) (x$facMensal))
   facAnuais = sapply (pop$avaliacao, function(x) (x$facAnual))
+  facMensais = sapply (pop$avaliacao, function(x) (x$facMensal))
   somRes = sapply (pop$avaliacao, function(x) (x$somRes))
   
-  objetivos = matrix (c(medias, desvios, facMensais, facAnuais, somRes), ncol = nPOPULACAO, nrow = nObjetivos, byrow = T)
-  ord = t (apply (objetivos, 1, function (x) order(x, decreasing = T)))
-  
+  objetivos = matrix (c(medias, desvios, facAnuais, facMensais, somRes), ncol = n, nrow = nObjetivos, byrow = T)
   CDmat = t (apply (objetivos, 1, function (x) distancia (x)))
   CD = apply (CDmat, 2, sum)
-  CD[ord[, 1]] = CD[ord[, n]] = sum (objetivos)
   
   return (CD)
 }
 
 distancia = function (avaliacoes) {
   n = length (avaliacoes)
-  ord = order(avaliacoes, decreasing = T)
+  print ("entrou")
+  print (n)
+  ord = order(avaliacoes)
   dist = numeric (n)
   avMax = max (avaliacoes)
   avMin = min (avaliacoes)
   
-  for (i in (2:(n-1)))
-    dist[ord[i]] = (avaliacoes[ord[i+1]] - avaliacoes[ord[i-1]]) / (avMax - avMin)
+  for (i in (2:(n-1))) {
+    dist[ord[i]] = dist[ord[i-1]] + ((avaliacoes[ord[i+1]] - avaliacoes[ord[i-1]]) / (avMax - avMin))
+  }
   
+  dist[ord[1]] = dist[ord[n]] = sum (avaliacoes)
   return (dist)
 }
 
@@ -79,89 +80,29 @@ CCO = function (pop) {
   dist = CDA (pop)
   diversidade = order (rank)
   
+  avaliacaoRank = list ()
+  contRank = 1
+  inicioRank = 1
+  
+  for (r in (2:(length (rank)))) {
+    if (rank[diversidade[r-1]] == rank[diversidade[r]]) {
+      contRank = contRank+1
+    }
+    else { #preciso excluir os casos de terem somente 1 e duas avaliacopes
+      populacaoRank = matrix (numeric (0), ncol = nINDIVIDUO, nrow = contRank)
+      populacaoRank = pop$populacao[diversidade[inicioRank:contRank], ]
+      avaliacaoRank = pop$avaliacao[diversidade[inicioRank:contRank]]
+      popRank = list (populacao = populacaoRank, avaliacao = avaliacaoRank)
+      rankOrd = CDA (popRank)
+      rankOrd = order (rankOrd, decreasing = T)
+      diversidade[inicioRank:contRank] = diversidade[inicioRank:contRank][rankOrd]
+      inicioRank = r
+      contRank = 1
+    }
+  }
   populacaoOrd = pop$populacao[diversidade, ]
   avaliacaoOrd = pop$avaliacao[diversidade]
   
   novoPop = list (populacao = populacaoOrd, avaliacao = avaliacaoOrd)
   return (novoPop)
-=======
-source ('avaliacao.R')
-
-FNS = function (pop) {
-  npIndividual = sapply (pop$avaliacao, function (x)
-    dominanciaCompleta (x, pop))
-  np = apply (npIndividual, 1, sum)
-  rank = ranqueamento (np)
-  
-  return (rank)
-}
-
-dominanciaCompleta = function (avaliacoes, pop) {
-  SpIndividual = sapply (pop$avaliacao, function (x)
-    if ((avaliacoes$media < x$media) && (avaliacoes$dp < x$dp) && 
-        (avaliacoes$facAnual < x$facAnual) && (avaliacoes$facMensal < x$facMensal) && 
-        (avaliacoes$somRes < x$somRes)) {
-      return (1)
-    }
-    else
-      return (0))
-}
-
-ranqueamento = function (np) {
-  fr = order (np)
-  rank = numeric (nPOPULACAO)
-  r = 1
-  rank[fr[1]] = r
-  
-  for (p in (2:nPOPULACAO)) {
-    if (np[fr[p-1]] == np[fr[p]])
-      rank[fr[p]] = r
-    else {
-      r = r+1
-      rank[fr[p]] = r
-    }
-  }
-  return (rank)
-}
-
-CDA = function (pop) {
-  dist = sapply(pop$avaliacao, function (x)
-    distEuclidiana (x, pop))
-  dist = t (dist)
-  return (dist)
-}
-
-distEuclidiana = function (avaliacoes, pop) {
-  dists = sapply(pop$avaliacao, function (x) 
-    sqrt (sum ((avaliacoes$media - x$media)^2 + (avaliacoes$dp - x$dp)^2 + 
-                 (avaliacoes$facAnual - x$facAnual)^2 + (avaliacoes$facMensal - x$facMensal)^2 + 
-                 (avaliacoes$somRes - x$somRes)^2)))
-  return (dists)
-}
-
-CCO = function (pop) {
-  rank = FNS (pop)
-  dist = CDA (pop)
-  r = order (rank)
-  diversidade = numeric (nPOPULACAO)
-  d = numeric (nPOPULACAO)
-  nivel = 1
-  i = 1
-  
-  for (p in (1:5)) {
-    if (rank[r[p]] == nivel) {
-      d[r[p]] = dist[r[p]]
-      print (d[r[p]])
-    }
-    d = order (d, na.last = T, decreasing = T)
-    
-  }
-  print (diversidade)
-  
-  #populacaoOrd = pop$populacao[diversidade, ]
-  #avaliacaoOrd = pop$avaliacao[diversidade]
-  
-  #novoPop = list (populacao = populacaoOrd, avaliacao = avaliacaoOrd)
-  #return (novoPop)
->>>>>>> a15340e948bdac63077d5101b05d29f2e0be66c5
 }
