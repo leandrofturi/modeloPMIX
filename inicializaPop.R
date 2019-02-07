@@ -5,7 +5,7 @@ nINDIVIDUO = 0
 individuoMIN = -1
 individuoMAX = 1
 intervaloMedia = 0.1
-intervaloDesvio = 1
+intervaloDesvio = 0.5
 
 geraIndividuo = function (nINDIVIDUO) {
   individuo = runif (nINDIVIDUO, individuoMIN, individuoMAX)

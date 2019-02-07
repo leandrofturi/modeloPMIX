@@ -2,8 +2,8 @@ source ('sumQuadRes.R')
 source ('cenarioSint.R')
 source ('correlograma.R')
 
-lagANUAL = 3
-lagMENSAL = 5
+lagANUAL = 5
+lagMENSAL = 3
 
 momentos = function (serie, parametros, lags) {
   residuos = residuos (serie, parametros, lags)
@@ -29,8 +29,8 @@ avaliacao = function (serieHN, avaliacoesInd) {
   
   funcMedia = sum (1 / (1 + abs (avaliacoesInd$media))) / 12
   funcDesvio = sum (1 / (1 + abs (1 - avaliacoesInd$dp))) / 12
-  funcFacAnual = sum (1 / (1 + abs (abs (facAnualH) - abs (avaliacoesInd$facAnual)))) / lagANUAL
-  funcFacMensal = sum (1 / (1 + abs (abs (facMensalH) - abs (avaliacoesInd$facMensal)))) / (lagMENSAL*12)
+  funcFacAnual = sum (1 / (1 + abs (facAnualH - avaliacoesInd$facAnual))) / lagANUAL
+  funcFacMensal = sum (1 / (1 + abs (facMensalH - avaliacoesInd$facMensal))) / (lagMENSAL*12)
   somRes = 1 / (1 + avaliacoesInd$somRes)
   
   final = list (media = funcMedia, dp = funcDesvio, facAnual = funcFacAnual, facMensal = funcFacMensal, somRes = somRes)
