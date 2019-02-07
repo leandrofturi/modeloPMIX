@@ -12,8 +12,8 @@ FNS = function (pop) {
 
 dominanciaCompleta = function (avaliacoes, pop) {
   SpIndividual = sapply (pop$avaliacao, function (x)
-    if ((avaliacoes$media >= x$media) && (avaliacoes$dp >= x$dp) && 
-        (avaliacoes$facAnual >= x$facAnual) && (avaliacoes$facMensal >= x$facMensal) && 
+    if ((avaliacoes$media >= x$media) && (avaliacoes$dp >= x$dp) &&
+        (avaliacoes$facAnual >= x$facAnual) && (avaliacoes$facMensal >= x$facMensal) &&
         (avaliacoes$somRes >= x$somRes)) {
       return (1)
     }
@@ -60,10 +60,9 @@ CDA = function (pop) {
 
 distancia = function (avaliacoes) {
   n = length (avaliacoes)
-  print ("entrou")
-  print (n)
-  ord = order(avaliacoes)
   dist = numeric (n)
+  
+  ord = order (avaliacoes)
   avMax = max (avaliacoes)
   avMin = min (avaliacoes)
   
@@ -77,6 +76,10 @@ distancia = function (avaliacoes) {
 
 CCO = function (pop) {
   rank = FNS (pop)
+  if (length (pop) <= 2) {
+    return (pop)
+  }
+  
   dist = CDA (pop)
   diversidade = order (rank)
   
@@ -88,7 +91,7 @@ CCO = function (pop) {
     if (rank[diversidade[r-1]] == rank[diversidade[r]]) {
       contRank = contRank+1
     }
-    else { #preciso excluir os casos de terem somente 1 e duas avaliacopes
+    else {
       populacaoRank = matrix (numeric (0), ncol = nINDIVIDUO, nrow = contRank)
       populacaoRank = pop$populacao[diversidade[inicioRank:contRank], ]
       avaliacaoRank = pop$avaliacao[diversidade[inicioRank:contRank]]

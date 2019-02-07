@@ -13,8 +13,8 @@ momentos = function (serie, parametros, lags) {
   media = apply(serieSint, 2, mean)
   dp = apply(serieSint, 2, sd)
   somRes = residuos$somRes
-  facMensal = correlograma (serieSint, lagMENSAL, F)
-  facAnual = correlogramaAnual (serieSint, lagANUAL)
+  facMensal = correlograma (serieSint, lagMENSAL, F)[-1, ]
+  facAnual = correlogramaAnual (serieSint, lagANUAL)[-1]
   
   final = list (media = media, dp = dp, somRes = somRes, facMensal = facMensal, facAnual = facAnual)
   
@@ -22,15 +22,15 @@ momentos = function (serie, parametros, lags) {
 }
 
 avaliacao = function (serieHN, avaliacoesInd) {
-  mediaH = apply(serieHN, 2, mean)
-  dpH = apply(serieHN, 2, sd)
-  facMensalH = correlograma (serieHN, lagMENSAL, F)
-  facAnualH = correlogramaAnual (serieHN, lagANUAL)
+  mediaH = apply (serieHN, 2, mean)
+  dpH = apply (serieHN, 2, sd)
+  facMensalH = correlograma (serieHN, lagMENSAL, F)[-1, ]
+  facAnualH = correlogramaAnual (serieHN, lagANUAL)[-1]
   
   funcMedia = sum (1 / (1 + abs (avaliacoesInd$media))) / 12
   funcDesvio = sum (1 / (1 + abs (1 - avaliacoesInd$dp))) / 12
-  funcFacAnual = sum (1 / (1 + abs (facAnualH - avaliacoesInd$facAnual))) / (lagANUAL + 1)
-  funcFacMensal = sum (1 / (1 + abs (facMensalH - avaliacoesInd$facMensal))) / ((lagMENSAL*12) + 1)
+  funcFacAnual = sum (1 / (1 + abs (abs (facAnualH) - abs (avaliacoesInd$facAnual)))) / lagANUAL
+  funcFacMensal = sum (1 / (1 + abs (abs (facMensalH) - abs (avaliacoesInd$facMensal)))) / (lagMENSAL*12)
   somRes = 1 / (1 + avaliacoesInd$somRes)
   
   final = list (media = funcMedia, dp = funcDesvio, facAnual = funcFacAnual, facMensal = funcFacMensal, somRes = somRes)

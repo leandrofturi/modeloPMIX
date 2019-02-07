@@ -96,3 +96,29 @@ serieSint = function(parametros, dpRes, lags, n) {
   
   return(serieS)
 }
+
+seriePlot = function (serieH, serieS) {
+  mediaH = apply (serieH, 2, mean)
+  dpH = apply (serieH, 2, sd)
+  mediaS = apply (serieS, 2, mean)
+  dpS = apply (serieS, 2, sd)
+  n = length (serieS) / 12
+  
+  par(lwd = 0.5, col = 'grey')
+  plot(mediaS, col= 'red', xlim = c(1,12), ylim = c(0, max(serieS)),
+       xlab = "Período (mensal)", ylab = "Vazão (m^3/s)", type = "n")
+    
+    for(ano in 1:n){
+      points(1:12, serieS[ano, ])
+    }
+    par(col = 'black')
+    legend("topright", c("Dados Históricos", "Dados Sintéticos"), bty = "n", col = c('Blue', 'Red'), pch = 19, cex=0.8)
+    par(lwd = 2)
+    lines(1:12, mediaH, col= 'blue')
+    lines(1:12, mediaS, col= 'red')
+    par(lwd = 0.5)
+    lines(1:12, mediaH + dpH, col= 'blue', lty = 2)
+    lines(1:12, mediaH - dpH, col= 'blue', lty = 2)
+    lines(1:12, mediaS + dpS, col= 'red', lty = 2)
+    lines(1:12, mediaS - dpS, col= 'red', lty = 2)
+}
