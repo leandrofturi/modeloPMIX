@@ -4,8 +4,8 @@ nPOPULACAO = 50
 nINDIVIDUO = 0
 individuoMIN = -1
 individuoMAX = 1
-intervaloMedia = 0.1
-intervaloDesvio = 0.5
+intervaloMedia = 1
+intervaloDesvio = 10
 
 geraIndividuo = function (nINDIVIDUO) {
   individuo = runif (nINDIVIDUO, individuoMIN, individuoMAX)
@@ -16,6 +16,10 @@ geraIndividuo = function (nINDIVIDUO) {
 geraPopulacao = function (serieHN, lags, inicio, pop) {
   nINDIVIDUO <<- (sum (lags))*12
   populacao = matrix (numeric(1), ncol = nINDIVIDUO, nrow = nPOPULACAO)
+  if (inicio) {
+    lagAnualSignificativo (serieHN)
+    lagMensalSignificativo (serieHN)
+  }
   avaliacao = list ()
   excluidos = 0
   p = 0
@@ -92,12 +96,7 @@ mutacao = function (individuo) {
 
 selecao = function (pop) {
   possiveis = sample(nPOPULACAO, 3, replace = F)
-  populacao = pop$populacao[possiveis, ]
-  avaliacao = pop$avaliacao[possiveis]
-  novoPop = list (populacao = populacao, avaliacao = avaliacao)
-  rank = FNS (novoPop)
-  
-  possiveisOrd = order (rank)
+  possiveis = sort (possiveis)
   possiveis = possiveis[-3]
   return (possiveis)
 }

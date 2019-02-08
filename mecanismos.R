@@ -12,9 +12,8 @@ FNS = function (pop) {
 
 dominanciaCompleta = function (avaliacoes, pop) {
   SpIndividual = sapply (pop$avaliacao, function (x)
-    if ((avaliacoes$media >= x$media) && (avaliacoes$dp >= x$dp) &&
-        (avaliacoes$facAnual >= x$facAnual) && (avaliacoes$facMensal >= x$facMensal) &&
-        (avaliacoes$somRes >= x$somRes)) {
+    #if ((avaliacoes$media <= x$media) && (avaliacoes$dp <= x$dp) && (avaliacoes$facAnual <= x$facAnual) && (avaliacoes$facMensal <= x$facMensal) && (avaliacoes$somRes <= x$somRes)) {
+    if ((avaliacoes$facAnual <= x$facAnual) && (avaliacoes$facMensal <= x$facMensal) && (avaliacoes$somRes <= x$somRes)) {
       return (1)
     }
     else
@@ -42,16 +41,17 @@ CDA = function (pop) {
   n  = length (pop$populacao) / nINDIVIDUO
   CD = numeric (n)
   diversidade = numeric (n)
-  nObjetivos = 5
+  nObjetivos = 3
   CDmat = matrix (numeric (0), ncol = n, nrow = nObjetivos)
   
-  medias = sapply (pop$avaliacao, function(x) (x$media))
-  desvios = sapply (pop$avaliacao, function(x) (x$dp))
+  #medias = sapply (pop$avaliacao, function(x) (x$media))
+  #desvios = sapply (pop$avaliacao, function(x) (x$dp))
   facAnuais = sapply (pop$avaliacao, function(x) (x$facAnual))
   facMensais = sapply (pop$avaliacao, function(x) (x$facMensal))
   somRes = sapply (pop$avaliacao, function(x) (x$somRes))
   
-  objetivos = matrix (c(medias, desvios, facAnuais, facMensais, somRes), ncol = n, nrow = nObjetivos, byrow = T)
+  #objetivos = matrix (c(medias, desvios, facAnuais, facMensais, somRes), ncol = n, nrow = nObjetivos, byrow = T)
+  objetivos = matrix (c(facAnuais, facMensais, somRes), ncol = n, nrow = nObjetivos, byrow = T)
   CDmat = t (apply (objetivos, 1, function (x) distancia (x)))
   CD = apply (CDmat, 2, sum)
   

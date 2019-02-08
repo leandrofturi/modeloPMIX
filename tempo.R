@@ -4,6 +4,9 @@ source ('mecanismos.R')
 source ('cenarioSint.R')
 source ('sumQuadRes.R')
 
+ciclo = 0
+tempoMAX = 1000
+
 NSGA = function (dados, lags) {
   serieHN = entrada (dados)$serieHN
   pop = geraPopulacao (serieHN, lags, T, NA)
@@ -12,7 +15,7 @@ NSGA = function (dados, lags) {
   populacao = matrix (numeric (0), ncol = nINDIVIDUO, nrow = nPOPULACAO)
   avaliacao = list ()
   
-  for (tempo in 1:1000) {
+  for (tempo in 1:tempoMAX) {
     novaPop = geraPopulacao (serieHN, lags, F, pop)
     populacaoTotal[(1:nPOPULACAO), ] = pop$populacao
     populacaoTotal[((nPOPULACAO+1):(2*nPOPULACAO)), ] = novaPop$populacao
@@ -27,6 +30,13 @@ NSGA = function (dados, lags) {
     populacao = popTotal$populacao[(1:nPOPULACAO), ]
     avaliacao = popTotal$avaliacao[1:nPOPULACAO]
     pop = list (populacao = populacao, avaliacao = avaliacao)
+    
+    ciclo <<- tempo
+    rankAtual = FNS (pop)
+    if (min (rankAtual == 1)) {
+      print ("todos na mesma fronteira!")
+      tempo = tempoMAX + 1
+    }
   }
   pop = CCO (pop)
   sink ("resultado.txt") 
@@ -35,9 +45,8 @@ NSGA = function (dados, lags) {
   
   parametros = pop$populacao[1, ]
   dpRes = residuos (serieHN, parametros, lags)$dpRes
-  melhorSerie = serieSint (parametros, dpRes, lags, 10000)
-  
-  tabelaserieS = data.frame(melhorSerie)
+  melhorSerie <<- serieSint (parametros, dpRes, lags, 10000)
+  tabelaserieS = data.frame (melhorSerie)
   rownames(tabelaserieS) = c(1:10000)
   colnames(tabelaserieS) = c("JANEIRO", "FEVEREIRO", "MARCO", "ABRIL", "MAIO", "JUNHO", "JULHO", "AGOSTO", "SETEMBRO", "OUTUBRO", "NOVEMBRO", "DEZEMBRO")
   write.csv2(tabelaserieS, "Serie Sintetica.csv")
