@@ -16,10 +16,10 @@ geraIndividuo = function (nINDIVIDUO) {
 geraPopulacao = function (serieHN, lags, inicio, pop) {
   nINDIVIDUO <<- (sum (lags))*12
   populacao = matrix (numeric(1), ncol = nINDIVIDUO, nrow = nPOPULACAO)
-  if (inicio) {
-    lagAnualSignificativo (serieHN)
-    lagMensalSignificativo (serieHN)
-  }
+  #if (inicio) {
+    #lagAnualSignificativo (serieHN)
+    #lagMensalSignificativo (serieHN)
+  #}
   avaliacao = list ()
   excluidos = 0
   p = 0

@@ -2,8 +2,8 @@ source ('sumQuadRes.R')
 source ('cenarioSint.R')
 source ('correlograma.R')
 
-LagANUAL = 0
-LagMENSAL = 0
+LagANUAL = 1
+LagMENSAL = 1
 
 momentos = function (serie, parametros, lags) {
   residuos = residuos (serie, parametros, lags)
