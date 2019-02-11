@@ -2,13 +2,14 @@ source ('sumQuadRes.R')
 source ('cenarioSint.R')
 source ('correlograma.R')
 
+
 LagANUAL = 1
 LagMENSAL = 1
 
 momentos = function (serie, parametros, lags) {
   residuos = residuos (serie, parametros, lags)
   dpRes = residuos$dpRes
-  serieSint = serieSint (parametros, dpRes, lags, 10000)
+  serieSint = serieSint (parametros, dpRes, lags, nH)
   
   media = apply(serieSint, 2, mean)
   dp = apply(serieSint, 2, sd)
@@ -22,18 +23,18 @@ momentos = function (serie, parametros, lags) {
 }
 
 avaliacao = function (serieHN, avaliacoesInd) {
-  #mediaH = apply (serieHN, 2, mean)
-  #dpH = apply (serieHN, 2, sd)
-  facMensalH = correlograma (serieHN, lagMENSAL, F)[-1, ]
-  facAnualH = correlogramaAnual (serieHN, lagANUAL)[-1]
+  mediaH = apply (serieHN, 2, mean)
+  dpH = apply (serieHN, 2, sd)
+  facMensalH = correlograma (serieHN, LagMENSAL, F)[-1, ]
+  facAnualH = correlogramaAnual (serieHN, LagANUAL)[-1]
   
-  #MAPEMedia = sum (abs (avaliacoesInd$media)) / 12
-  #MAPEDesvio = sum (abs (avaliacoesInd$dp - 1)) / 12
+  MAPEMedia = sum (abs (avaliacoesInd$media)) / 12
+  MAPEDesvio = sum (abs (avaliacoesInd$dp - 1)) / 12
   MAPEFacAnual = sum (abs ((facAnualH - avaliacoesInd$facAnual) / facAnualH)) / LagANUAL
   MAPEFacMensal = sum (abs ((facMensalH - avaliacoesInd$facMensal) / facMensalH)) / (LagMENSAL*12)
   somRes = avaliacoesInd$somRes
   
-  final = list (facAnual = MAPEFacAnual, facMensal = MAPEFacMensal, somRes = somRes)
+  final = list (media = MAPEMedia, dp = MAPEDesvio, facAnual = MAPEFacAnual, facMensal = MAPEFacMensal, somRes = somRes)
   
   return (final)
 }
@@ -41,7 +42,7 @@ avaliacao = function (serieHN, avaliacoesInd) {
 lagAnualSignificativo = function (serieHN) {
   intConfianca = 1.96 / sqrt (length (serieHN) / 12)
   LagANUAL <<- 12
-  while (lagANUAL < (length (serieHN) / 12)) {
+  while (LagANUAL < (length (serieHN) / 12)) {
     facAnualH = correlogramaAnual (serieHN, LagANUAL)[-1]
     lagAnual = sum (facAnualH >= intConfianca)
     if (lagAnual == LagANUAL)
@@ -56,10 +57,10 @@ lagAnualSignificativo = function (serieHN) {
 lagMensalSignificativo = function (serieHN) {
   intConfianca = 1.96 / sqrt (length (serieHN) / 12)
   LagMENSAL <<- 12
-  while (lagANUAL < (length (serieHN))) {
+  while (LagANUAL < (length (serieHN))) {
     facMensalH = correlograma (serieHN, LagMENSAL, F)[-1, ]
     facMensalH = facMensalH >= intConfianca
-    lagMensal = apply (facAnualH, 2, sum)
+    lagMensal = apply (facMensalH, 2, sum)
     lagMensalMin = min (lagMensal)
     if (lagMensalMin == LagMENSAL)
       LagMENSAL <<- LagMENSAL + 12

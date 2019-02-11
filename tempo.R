@@ -9,6 +9,7 @@ tempoMAX = 1000
 
 NSGA = function (dados, lags) {
   serieHN = entrada (dados)$serieHN
+  nH <<- length (serieHN) / 12
   pop = geraPopulacao (serieHN, lags, T, NA)
   populacaoTotal = matrix (numeric (0), ncol = nINDIVIDUO, nrow = 2*nPOPULACAO)
   avaliacaoTotal = list ()
@@ -45,9 +46,9 @@ NSGA = function (dados, lags) {
   
   parametros = pop$populacao[1, ]
   dpRes = residuos (serieHN, parametros, lags)$dpRes
-  melhorSerie <<- serieSint (parametros, dpRes, lags, 10000)
+  melhorSerie <<- serieSint (parametros, dpRes, lags, nH)
   tabelaserieS = data.frame (melhorSerie)
-  rownames(tabelaserieS) = c(1:10000)
+  rownames(tabelaserieS) = c(1:nH)
   colnames(tabelaserieS) = c("JANEIRO", "FEVEREIRO", "MARCO", "ABRIL", "MAIO", "JUNHO", "JULHO", "AGOSTO", "SETEMBRO", "OUTUBRO", "NOVEMBRO", "DEZEMBRO")
   write.csv2(tabelaserieS, "Serie Sintetica.csv")
   

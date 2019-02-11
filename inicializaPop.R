@@ -1,11 +1,11 @@
 source ('avaliacao.R')
 
-nPOPULACAO = 50
+nPOPULACAO = 500
 nINDIVIDUO = 0
 individuoMIN = -1
 individuoMAX = 1
-intervaloMedia = 1
-intervaloDesvio = 10
+intervaloMedia = 0.1
+intervaloDesvio = 0.5
 
 geraIndividuo = function (nINDIVIDUO) {
   individuo = runif (nINDIVIDUO, individuoMIN, individuoMAX)
@@ -16,14 +16,14 @@ geraIndividuo = function (nINDIVIDUO) {
 geraPopulacao = function (serieHN, lags, inicio, pop) {
   nINDIVIDUO <<- (sum (lags))*12
   populacao = matrix (numeric(1), ncol = nINDIVIDUO, nrow = nPOPULACAO)
-  #if (inicio) {
-    #lagAnualSignificativo (serieHN)
-    #lagMensalSignificativo (serieHN)
-  #}
+  if (inicio) {
+    lagAnualSignificativo (serieHN)
+    lagMensalSignificativo (serieHN)
+  }
   avaliacao = list ()
   excluidos = 0
   p = 0
-  iniciarMomentos = F
+  iniciarMomentos = T
   print("Formando populacao...")
   
   while (p < nPOPULACAO) {
@@ -57,16 +57,16 @@ geraPopulacao = function (serieHN, lags, inicio, pop) {
       momentos = momentos (serieHN, novoIndividuo, lags)
     
       if (!((is.nan (momentos$media)) || (is.nan (momentos$dp)) || (is.infinite (momentos$media)) || (is.infinite (momentos$dp)))) {
-       if (min ((momentos$media > (0 - intervaloMedia)) & (momentos$media < intervaloMedia) &
-                (momentos$dp > (1 - intervaloDesvio)) & (momentos$dp < (1 + intervaloDesvio)))) {
+       #if (min ((momentos$media > (0 - intervaloMedia)) & (momentos$media < intervaloMedia) &
+                #(momentos$dp > (1 - intervaloDesvio)) & (momentos$dp < (1 + intervaloDesvio)))) {
           av = avaliacao (serieHN, momentos)
           p = p + 1
           populacao[p, ] = novoIndividuo
           avaliacao[[p]] = av
           print (p)       
-       }
-      else
-        excluidos = excluidos + 1
+       #}
+      #else
+        #excluidos = excluidos + 1
       }
     }
     else
