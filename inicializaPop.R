@@ -23,7 +23,7 @@ geraPopulacao = function (serieHN, lags, inicio, pop) {
   avaliacao = list ()
   excluidos = 0
   p = 0
-  iniciarMomentos = T
+  iniciarMomentos = F
   print("Formando populacao...")
   
   while (p < nPOPULACAO) {

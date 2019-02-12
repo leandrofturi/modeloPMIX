@@ -89,7 +89,8 @@ serieSint = function(serie, p, n)                                               
   sdNormal = entrada$sdNormal
   nHist = length(serieNormal)/12
   paramPhi = paramPhi(serieNormal, p)
-  phi = paramPhi$phi
+  phi <<- paramPhi$phi #olha aqui
+  phi[1] = 0.3
   varEpsilon = paramPhi$varEpsilon
   sdEpsilon = sqrt(varEpsilon)
   
