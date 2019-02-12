@@ -33,13 +33,27 @@ NSGA = function (dados, lags) {
     pop = list (populacao = populacao, avaliacao = avaliacao)
     
     ciclo <<- tempo
-    #rankAtual = FNS (pop)
-    #if (max (rankAtual == 1)) {
-      #print ("todos na mesma fronteira!")
-      #tempo = tempoMAX + 1
-    #}
+    rankAtual = FNS (pop)
+    if (max (rankAtual == 1)) {
+      print ("todos na mesma fronteira!")
+      tempo = tempoMAX + 1
+    }
   }
   pop = CCO (pop)
+  rankAtual = FNS (pop)
+  ord = order (rankAtual)
+  p = 1
+  while (rankAtual[ord[p]]== 1){
+    p = p + 1
+  }
+  p = p - 1
+  pop$populacao = pop$populacao[1:p, ]
+  pop$avaliacao = pop$avaliacao[1:p]
+  somResPop = sapply (pop$avaliacao, function(x) (x$somRes))
+  ordenacaoSomRes = order (somResPop)
+  pop$populacao = pop$populacao[ordenacaoSomRes, ]
+  pop$avaliacao = pop$avaliacao[ordenacaoSomRes]
+  
   sink ("resultado.txt") 
   print (pop)
   sink ()
@@ -48,71 +62,11 @@ NSGA = function (dados, lags) {
   
   parametros = pop$populacao[1, ]
   dpRes = residuos (serieHN, parametros, lags)$dpRes
-  melhorSerie <<- serieSint (parametros, dpRes, lags, nH)
+  melhorSerie <<- serieSint (parametros, dpRes, lags, 10000)
   tabelaserieS = data.frame (melhorSerie)
-  rownames(tabelaserieS) = c(1:nH)
+  rownames(tabelaserieS) = c(1:10000)
   colnames(tabelaserieS) = c("JANEIRO", "FEVEREIRO", "MARCO", "ABRIL", "MAIO", "JUNHO", "JULHO", "AGOSTO", "SETEMBRO", "OUTUBRO", "NOVEMBRO", "DEZEMBRO")
   write.csv2(tabelaserieS, "Serie Sintetica.csv")
-  
-  pop$avaliacao = pop$avaliacao[1:100]
-  medias = sum (sapply (pop$avaliacao, function(x) (x$media))) / 100
-  desvios = sum (sapply (pop$avaliacao, function(x) (x$dp))) / 100
-  facAnuais = sum (sapply (pop$avaliacao, function(x) (x$facAnual))) / 100
-  facMensais = sum (sapply (pop$avaliacao, function(x) (x$facMensal))) / 100
-  somRes = sum (sapply (pop$avaliacao, function(x) (x$somRes))) / 100
-  
-  sink ("medias100.txt")
-  print (medias)
-  print (desvios)
-  print (facAnuais)
-  print (facMensais)
-  print (somRes)
-  sink ()
-  
-  pop$avaliacao = pop$avaliacao[1:50]
-  medias = sum (sapply (pop$avaliacao, function(x) (x$media))) / 50
-  desvios = sum (sapply (pop$avaliacao, function(x) (x$dp))) / 50
-  facAnuais = sum (sapply (pop$avaliacao, function(x) (x$facAnual))) / 50
-  facMensais = sum (sapply (pop$avaliacao, function(x) (x$facMensal))) / 50
-  somRes = sum (sapply (pop$avaliacao, function(x) (x$somRes))) / 50
-  
-  sink ("medias50.txt")
-  print (medias)
-  print (desvios)
-  print (facAnuais)
-  print (facMensais)
-  print (somRes)
-  sink ()
-  
-  pop$avaliacao = pop$avaliacao[1:20]
-  medias = sum (sapply (pop$avaliacao, function(x) (x$media))) / 20
-  desvios = sum (sapply (pop$avaliacao, function(x) (x$dp))) / 20
-  facAnuais = sum (sapply (pop$avaliacao, function(x) (x$facAnual))) / 20
-  facMensais = sum (sapply (pop$avaliacao, function(x) (x$facMensal))) / 20
-  somRes = sum (sapply (pop$avaliacao, function(x) (x$somRes))) / 20
-  
-  sink ("medias20.txt")
-  print (medias)
-  print (desvios)
-  print (facAnuais)
-  print (facMensais)
-  print (somRes)
-  sink ()
-  
-  pop$avaliacao = pop$avaliacao[1:10]
-  medias = sum (sapply (pop$avaliacao, function(x) (x$media))) / 10
-  desvios = sum (sapply (pop$avaliacao, function(x) (x$dp))) / 10
-  facAnuais = sum (sapply (pop$avaliacao, function(x) (x$facAnual))) / 10
-  facMensais = sum (sapply (pop$avaliacao, function(x) (x$facMensal))) / 10
-  somRes = sum (sapply (pop$avaliacao, function(x) (x$somRes))) / 10
-  
-  sink ("medias10.txt")
-  print (medias)
-  print (desvios)
-  print (facAnuais)
-  print (facMensais)
-  print (somRes)
-  sink ()
   
   return (pop)
 }

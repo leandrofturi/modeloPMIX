@@ -23,13 +23,14 @@ geraPopulacao = function (serieHN, lags, inicio, pop) {
   avaliacao = list ()
   excluidos = 0
   p = 0
-  iniciarMomentos = F
+  iniciarMomentos = T
   print("Formando populacao...")
   
   while (p < nPOPULACAO) {
 ###########################################################################################
     if (inicio && iniciarMomentos) {
       novoIndividuo = paramPhi (serieHN, lags[1])$phi
+      novoIndividuo = c (novoIndividuo, rep (0, 12*(lags[2] + lags[3] + lags[4])))
       p = p + 1
       momentos = momentos (serieHN, novoIndividuo, lags)
       av = avaliacao (serieHN, momentos)
