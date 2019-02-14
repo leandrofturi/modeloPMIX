@@ -5,7 +5,9 @@ source ('correlograma.R')
 momentos = function (series, parametros, lags) {
   residuos = residuos (series$serieHN, parametros, lags)
   dpRes = residuos$dpRes
-  serieSint = serieSint (parametros, dpRes, lags, (length (series$serieH))/12)
+  nS = (length (series$serieH))/12
+  #nS = 10000
+  serieSint = serieSint (parametros, dpRes, lags, nS)
   serieSint = t ((t (serieSint) * series$dpHL) + series$mediaHL)
   serieSint = exp (serieSint)
   

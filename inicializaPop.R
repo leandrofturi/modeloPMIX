@@ -1,6 +1,6 @@
 source ('avaliacao.R')
 
-nPOPULACAO = 500
+nPOPULACAO = 50
 
 geraIndividuo = function (nINDIVIDUO) {
   individuoMIN = -1
@@ -56,6 +56,7 @@ geraPopulacao = function (series, lags, inicio, pop) {
     if (! (max (estouro (momentos$media)) || (estouro (momentos$dp)) || (estouro (momentos$facAnual)) || (estouro (momentos$facMensal)))) {
         av = avaliacao (series, momentos)
         p = p + 1
+        print (p)
         populacao[p, ] = novoIndividuo
         avaliacao[[p]] = av
       }

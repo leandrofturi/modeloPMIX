@@ -54,5 +54,8 @@ MAPEdiferenca = function (populacao) {
   individuo = populacao [(round (runif (1, 1, nPOPULACAO))), ]
   diferencas = abs (t ((t (populacao) - individuo) / individuo))
   MAPEdif = sum (diferencas) / length (populacao)
-  return (MAPEdif)
+  if (max (is.na (MAPEdif) || is.nan (MAPEdif) || is.infinite (MAPEdif)))
+    return (1)
+  else
+    return (MAPEdif)
 }
