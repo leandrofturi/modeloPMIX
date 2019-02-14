@@ -1,25 +1,19 @@
 source ('avaliacao.R')
 
 nPOPULACAO = 500
-nINDIVIDUO = 0
-individuoMIN = -1
-individuoMAX = 1
-intervaloMedia = 0.1
-intervaloDesvio = 0.5
 
 geraIndividuo = function (nINDIVIDUO) {
+  individuoMIN = -1
+  individuoMAX = 1
   individuo = runif (nINDIVIDUO, individuoMIN, individuoMAX)
   
   return (individuo)
 }
 
-geraPopulacao = function (serieHN, lags, inicio, pop) {
-  nINDIVIDUO <<- (sum (lags))*12
+geraPopulacao = function (series, lags, inicio, pop) {
+  nINDIVIDUO = (sum (lags))*12
   populacao = matrix (numeric(1), ncol = nINDIVIDUO, nrow = nPOPULACAO)
-  if (inicio) {
-    lagAnualSignificativo (serieHN)
-    lagMensalSignificativo (serieHN)
-  }
+
   avaliacao = list ()
   excluidos = 0
   p = 0
@@ -27,16 +21,19 @@ geraPopulacao = function (serieHN, lags, inicio, pop) {
   print("Formando populacao...")
   
   while (p < nPOPULACAO) {
+    
 ###########################################################################################
+    
     if (inicio && iniciarMomentos) {
-      novoIndividuo = paramPhi (serieHN, lags[1])$phi
-      novoIndividuo = c (novoIndividuo, rep (0, 12*(lags[2] + lags[3] + lags[4])))
+      novoIndividuo = paramPhi (series$serieHN, lags[1])$phi
+      novoIndividuo = c (novoIndividuo, rep (0, 12*sum (lags[2] + lags[3] + lags[4])))
       p = p + 1
-      momentos = momentos (serieHN, novoIndividuo, lags)
-      av = avaliacao (serieHN, momentos)
-      populacao[p, ] = novoIndividuo
-      avaliacao[[p]] = av
-      print (p)
+      momentos = momentos (series, novoIndividuo, lags)
+      if (! (max (estouro (momentos$media)) || (estouro (momentos$dp)) || (estouro (momentos$facAnual)) || (estouro (momentos$facMensal)))) {
+        av = avaliacao (series, momentos)
+        populacao[p, ] = novoIndividuo
+        avaliacao[[p]] = av
+      }
       iniciarMomentos = F
     }
     
@@ -44,35 +41,28 @@ geraPopulacao = function (serieHN, lags, inicio, pop) {
     
     if (inicio)
       novoIndividuo = geraIndividuo (nINDIVIDUO)
+    
     else {
       pais = selecao (pop)
-      novoIndividuo = crossoverBLX (pop$populacao[pais[1]], pop$populacao[pais[2]])
+      novoIndividuo = crossoverBLX (pop$populacao[pais[1], ], pop$populacao[pais[2], ])
+      
       probMut = runif (1, 0, 1)
       if (probMut <= 0.01) {
         novoIndividuo = mutacao (novoIndividuo)
-        print ("mutacao")
       }
     }
 
-    if ((prod (novoIndividuo) <= 1) && (prod (novoIndividuo) >= -1)) {
-      momentos = momentos (serieHN, novoIndividuo, lags)
-    
-      if (!((is.nan (momentos$media)) || (is.nan (momentos$dp)) || (is.infinite (momentos$media)) || (is.infinite (momentos$dp)))) {
-       #if (min ((momentos$media > (0 - intervaloMedia)) & (momentos$media < intervaloMedia) &
-                #(momentos$dp > (1 - intervaloDesvio)) & (momentos$dp < (1 + intervaloDesvio)))) {
-          av = avaliacao (serieHN, momentos)
-          p = p + 1
-          populacao[p, ] = novoIndividuo
-          avaliacao[[p]] = av
-          print (p)       
-       #}
-      #else
-        #excluidos = excluidos + 1
+    momentos = momentos (series, novoIndividuo, lags)
+    if (! (max (estouro (momentos$media)) || (estouro (momentos$dp)) || (estouro (momentos$facAnual)) || (estouro (momentos$facMensal)))) {
+        av = avaliacao (series, momentos)
+        p = p + 1
+        populacao[p, ] = novoIndividuo
+        avaliacao[[p]] = av
       }
-    }
     else
       excluidos = excluidos + 1
   }
+  
   if (inicio)
     print (paste ("excluidos", excluidos))
   
@@ -82,28 +72,27 @@ geraPopulacao = function (serieHN, lags, inicio, pop) {
 
 crossoverBLX = function (pai1, pai2) {
   ALFA = 0.5
-  beta = runif (nINDIVIDUO, -ALFA, 1+ALFA)
-  homog = round (runif (nINDIVIDUO, 0, 1))
+  beta = runif ((length (pai1)), -ALFA, 1+ALFA)
+  homog = round (runif ((length (pai1)), 0, 1))
   
   filho = pai1 + homog*beta*(pai2 - pai1)
   return (filho)
 }
 
 mutacao = function (individuo) {
-  novoIndividuo = runif (nINDIVIDUO, individuoMIN, individuoMAX)
+  novoIndividuo = geraIndividuo (length (individuo))
   
   return (novoIndividuo)
 }
 
 selecao = function (pop) {
-  possiveis = sample(nPOPULACAO, 3, replace = F)
+  possiveis = sample (nPOPULACAO, 3, replace = F)
   possiveis = sort (possiveis)
   possiveis = possiveis[-3]
   return (possiveis)
 }
 
-#pop$avalioacao[[1]]$media
-#sapply(pop$avaliacao, function(x) (x$media)) pega todos e coloca numa matriz
+###########################################################################################
 
 source ('correlograma.R')
 paramPhi = function (serieHN, p)
@@ -112,7 +101,7 @@ paramPhi = function (serieHN, p)
   serie = as.vector (t (serieHN))
   n = length (serieHN)/12
   
-  tablePhi = matrix(numeric (1), nrow = p, ncol = 12)
+  tablePhi = matrix (numeric (1), nrow = p, ncol = 12)
   varEpsilon = rep (1, 12)
   
   for (mes in 1:12) {
@@ -120,13 +109,13 @@ paramPhi = function (serieHN, p)
     rok = rep (1, p)
     I = matrix (numeric (1), nrow = p, ncol = p)
     
-    for(j in 1:p){
+    for (j in 1:p){
       meslag = (mes - j - 1) %% 12 + 1
       for(i in j:p){
         k = abs (j - i) + 1
         Pk[i, j] = fac[k, meslag]
         
-        if(i == j){
+        if (i == j){
           I[i, j] = 1
         }
       }

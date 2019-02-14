@@ -1,23 +1,22 @@
 source ('entrada.R')
 source ('inicializaPop.R')
 source ('mecanismos.R')
-source ('cenarioSint.R')
-source ('sumQuadRes.R')
 
-ciclo = 0
 tempoMAX = 10000
 
 NSGA = function (dados, lags) {
-  serieHN <<- entrada (dados)$serieHN
-  nH <<- length (serieHN) / 12
-  pop = geraPopulacao (serieHN, lags, T, NA)
+  series = entrada (dados)
+  pop = geraPopulacao (series, lags, T, NA)
+  nINDIVIDUO = (sum (lags))*12
   populacaoTotal = matrix (numeric (0), ncol = nINDIVIDUO, nrow = 2*nPOPULACAO)
   avaliacaoTotal = list ()
   populacao = matrix (numeric (0), ncol = nINDIVIDUO, nrow = nPOPULACAO)
   avaliacao = list ()
+  ciclo = T
+  tempo = 0
   
-  for (tempo in 1:tempoMAX) {
-    novaPop = geraPopulacao (serieHN, lags, F, pop)
+  while ((ciclo) && (tempo <= tempoMAX)) {
+    novaPop = geraPopulacao (series, lags, F, pop)
     populacaoTotal[(1:nPOPULACAO), ] = pop$populacao
     populacaoTotal[((nPOPULACAO+1):(2*nPOPULACAO)), ] = novaPop$populacao
     avaliacaoTotal[(1:nPOPULACAO)] = pop$avaliacao
@@ -26,47 +25,34 @@ NSGA = function (dados, lags) {
     popTotal = list (populacao = populacaoTotal, avaliacao = avaliacaoTotal)
     popTotal = CCO (popTotal)
     
-    ciclos = paste ("ciclo", tempo)
-    print (ciclos)
     populacao = popTotal$populacao[(1:nPOPULACAO), ]
     avaliacao = popTotal$avaliacao[1:nPOPULACAO]
     pop = list (populacao = populacao, avaliacao = avaliacao)
+    tempo = tempo + 1
+    print (paste ("ciclo", tempo))
     
-    ciclo <<- tempo
-    rankAtual = FNS (pop)
-    if (max (rankAtual == 1)) {
-      print ("todos na mesma fronteira!")
-      tempo = tempoMAX + 1
-    }
+    if ((MAPEdiferenca (populacao)) < 0.002)
+      ciclo = F
   }
-  pop = CCO (pop)
-  rankAtual = FNS (pop)
-  ord = order (rankAtual)
-  p = 1
-  while (rankAtual[ord[p]]== 1){
-    p = p + 1
-  }
-  p = p - 1
-  pop$populacao = pop$populacao[1:p, ]
-  pop$avaliacao = pop$avaliacao[1:p]
-  somResPop = sapply (pop$avaliacao, function(x) (x$somRes))
-  ordenacaoSomRes = order (somResPop)
-  pop$populacao = pop$populacao[ordenacaoSomRes, ]
-  pop$avaliacao = pop$avaliacao[ordenacaoSomRes]
   
-  sink ("resultado.txt") 
+  somResFinal = sapply (pop$avaliacao, function(x) (x$somRes))
+  pop$populacao = pop$populacao[order (somResFinal), ]
+  pop$avaliacao = pop$avaliacao[order (somResFinal)]
+  sink ("resultado.txt")
   print (pop)
   sink ()
   
-  resultadosFinais <<- pop
+  #tabelaserieS = data.frame (melhorSerie)
+  #rownames(tabelaserieS) = c(1:10000)
+  #colnames(tabelaserieS) = c("JANEIRO", "FEVEREIRO", "MARCO", "ABRIL", "MAIO", "JUNHO", "JULHO", "AGOSTO", "SETEMBRO", "OUTUBRO", "NOVEMBRO", "DEZEMBRO")
+  #write.csv2(tabelaserieS, "Serie Sintetica.csv")
   
-  parametros = pop$populacao[1, ]
-  dpRes = residuos (serieHN, parametros, lags)$dpRes
-  melhorSerie <<- serieSint (parametros, dpRes, lags, 10000)
-  tabelaserieS = data.frame (melhorSerie)
-  rownames(tabelaserieS) = c(1:10000)
-  colnames(tabelaserieS) = c("JANEIRO", "FEVEREIRO", "MARCO", "ABRIL", "MAIO", "JUNHO", "JULHO", "AGOSTO", "SETEMBRO", "OUTUBRO", "NOVEMBRO", "DEZEMBRO")
-  write.csv2(tabelaserieS, "Serie Sintetica.csv")
-  
-  return (pop)
+  return ( )
+}
+
+MAPEdiferenca = function (populacao) {
+  individuo = populacao [(round (runif (1, 1, nPOPULACAO))), ]
+  diferencas = abs (t ((t (populacao) - individuo) / individuo))
+  MAPEdif = sum (diferencas) / length (populacao)
+  return (MAPEdif)
 }

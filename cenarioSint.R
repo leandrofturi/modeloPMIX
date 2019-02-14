@@ -106,13 +106,13 @@ seriePlot = function (serieH, serieS) {
   
   par(lwd = 0.5, col = 'grey')
   plot(mediaS, col= 'red', xlim = c(1,12), ylim = c(0, max(serieS)),
-       xlab = "Período (mensal)", ylab = "Vazão (m^3/s)", type = "n")
+       xlab = "Periodo (mensal)", ylab = "Vazao (m^3/s)", type = "n")
     
     for(ano in 1:n){
       points(1:12, serieS[ano, ])
     }
     par(col = 'black')
-    legend("topright", c("Dados Históricos", "Dados Sintéticos"), bty = "n", col = c('Blue', 'Red'), pch = 19, cex=0.8)
+    legend("topright", c("Dados Historicos", "Dados Sinteticos"), bty = "n", col = c('Blue', 'Red'), pch = 19, cex=0.8)
     par(lwd = 2)
     lines(1:12, mediaH, col= 'blue')
     lines(1:12, mediaS, col= 'red')

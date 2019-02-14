@@ -150,7 +150,7 @@ PAR = function(serie, p, n, seriePlot){
   data = paste0("PAR(", p, ") ", data)
   dir.create(file.path("./", data))
   
-  tabelaDadosH = data.frame(facH)                                                # PARAMETROS DOS DADOS HISTÓRICOS PUROS
+  tabelaDadosH = data.frame(facH)                                                # PARAMETROS DOS DADOS HIST?RICOS PUROS
   rownames(tabelaDadosH) = c(facNome)
   colnames(tabelaDadosH) = meses
   write.csv2(tabelaDadosH, paste0(data, "/Autocorrelacao Historica.csv"))
@@ -172,13 +172,13 @@ PAR = function(serie, p, n, seriePlot){
   
   if (seriePlot){
     par(lwd = 0.5, col = 'grey')
-    plot(main = "Serie Sintética", mediaS, col= 'red', xlim = c(1,12), ylim = c(0, max(serieS)),
+    plot(main = "Serie Sintetica", mediaS, col= 'red', xlim = c(1,12), ylim = c(0, max(serieS)),
          xlab = "meses", ylab = "valores gerados", type = "n")
     for(ano in 1:n){
       points(1:12, serieS[ano, ])
     }
     par(col = 'black')
-    legend("topright", c("Dados Históricos", "Dados Sintéticos"), bty = "n", col = c('Blue', 'Red'), pch = 19, cex=0.8)
+    legend("topright", c("Dados Historicos", "Dados Sinteticos"), bty = "n", col = c('Blue', 'Red'), pch = 19, cex=0.8)
     par(lwd = 2)
     lines(1:12, mediaH, col= 'blue')
     lines(1:12, mediaS, col= 'red')
