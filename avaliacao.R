@@ -1,41 +1,34 @@
 source ('cenarioSint.R')
-source ('sumQuadRes.R')
 source ('correlograma.R')
+source ('sumQuadRes.R')
 
-momentos = function (series, parametros, lags) {
-  residuos = residuos (series$serieHN, parametros, lags)
+momentos = function (entrada, parametros, lags, nS) {
+  residuos = residuos (entrada$serieHN, parametros, lags)
   dpRes = residuos$dpRes
-  nS = (length (series$serieH))/12
-  #nS = 10000
   serieSint = serieSint (parametros, dpRes, lags, nS)
-  serieSint = t ((t (serieSint) * series$dpHL) + series$mediaHL)
+  serieSint = t ((t (serieSint) * entrada$dpHL) + entrada$mediaHL)
   serieSint = exp (serieSint)
   
   media = apply (serieSint, 2, mean)
   dp = apply (serieSint, 2, sd)
+  facAnual = correlogramaAnual (serieSint, entrada$lagAnual)[-1]
+  facMensal = correlograma (serieSint, entrada$lagMensal, F)[-1, ]
   somRes = residuos$somRes
-  lagAnual = lagAnualSignificativo (series$serieH)
-  facAnual = correlogramaAnual (serieSint, lagAnual)[-1]
-  lagMensal = lagMensalSignificativo (series$serieH)
-  facMensal = correlograma (serieSint, lagMensal, F)[-1, ]
   
-  final = list (media = media, dp = dp, somRes = somRes, facAnual = facAnual, facMensal = facMensal)
+  final = list (media = media, dp = dp, facAnual = facAnual, facMensal = facMensal, somRes = somRes)
   return (final)
 }
 
-avaliacao = function (series, avaliacoesInd) {
-  mediaH = apply (series$serieH, 2, mean)
-  dpH = apply (series$serieH, 2, sd)
-  lagAnual = length (avaliacoesInd$facAnual)
-  lagMensal = length (avaliacoesInd$facMensal) / 12
-  facAnualH = correlogramaAnual (series$serieH, lagAnual)[-1]
-  facMensalH = correlograma (series$serieH, lagMensal, F)[-1, ]
-  
-  MAPEMedia = sum (abs ((mediaH - avaliacoesInd$media) / mediaH)) / 12
-  MAPEDesvio = sum (abs ((dpH - avaliacoesInd$dp)) / dpH) / 12
-  MAPEFacAnual = sum (abs ((facAnualH - avaliacoesInd$facAnual) / facAnualH)) / lagAnual
-  MAPEFacMensal = sum (abs ((facMensalH - avaliacoesInd$facMensal) / facMensalH)) / (lagMensal*12)
-  somRes = avaliacoesInd$somRes
+avaliacao = function (entrada, momentosS) {
+  mediaH = entrada$mediaH
+  dpH = entrada$dpH
+  facAnualH = entrada$facAnual
+  facMensalH = entrada$facMensal
+  MAPEMedia = sum (abs ((mediaH - momentosS$media) / mediaH)) / 12
+  MAPEDesvio = sum (abs ((dpH - momentosS$dp)) / dpH) / 12
+  MAPEFacAnual = sum (abs ((facAnualH - momentosS$facAnual) / facAnualH)) / entrada$lagAnual
+  MAPEFacMensal = sum (abs ((facMensalH - momentosS$facMensal) / facMensalH)) / (entrada$lagMensal)*12
+  somRes = momentosS$somRes
   
   final = list (media = MAPEMedia, dp = MAPEDesvio, facAnual = MAPEFacAnual, facMensal = MAPEFacMensal, somRes = somRes)
   return (final)
@@ -69,9 +62,13 @@ lagMensalSignificativo = function (serie) {
   }
 }
 
-estouro = function (momento) {
-  if (max (is.na (momento) || is.nan (momento) || is.infinite (momento)))
-    return (TRUE)
-  else
+estouro = function (momentos) {
+  if ((min (is.finite (momentos$media))) &&
+      (min (is.finite (momentos$dp))) &&
+      (min (is.finite (momentos$facAnual))) &&
+      (min (is.finite (momentos$facMensal))) &&
+      (min (is.finite (momentos$somRes))))
     return (FALSE)
+  
+  return (TRUE)
 }
