@@ -34,34 +34,6 @@ avaliacao = function (entrada, momentosS) {
   return (final)
 }
 
-lagAnualSignificativo = function (serie) {
-  intConfianca = 1.96 / sqrt (length (serie) / 12)
-  lagAnual = 12
-  while (lagAnual < (length (serie) / 12)) {
-    facAnual = correlogramaAnual (serie, lagAnual)[-1]
-    lagAnualMin = sum (facAnual >= intConfianca)
-    if (lagAnualMin == lagAnual)
-      lagAnual = lagAnual + 12
-    else
-      return (lagAnualMin)
-  }
-}
-
-lagMensalSignificativo = function (serie) {
-  intConfianca = 1.96 / sqrt (length (serie) / 12)
-  lagMensal = 12
-  while (lagMensal < (length (serie))) {
-    facMensal = correlograma (serie, lagMensal, F)[-1, ]
-    facMensal = facMensal >= intConfianca
-    lagMensalMin = apply (facMensal, 2, sum)
-    lagMensalMin = min (lagMensalMin)
-    if (lagMensalMin == lagMensal)
-      lagMensal = lagMensal + 12
-    else
-      return (lagMensalMin)
-  }
-}
-
 estouro = function (momentos) {
   if ((min (is.finite (momentos$media))) &&
       (min (is.finite (momentos$dp))) &&
