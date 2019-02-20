@@ -3,6 +3,8 @@ source ('inicializaPop.R')
 source ('mecanismos.R')
 
 require ('parallel')
+cores = detectCores () - 1
+cl = makeCluster (1)
 
 #PARAMETROS ALGORITMO GENETICO
 nPOPULACAO = 50
@@ -62,8 +64,8 @@ NSGA = function (dados, lags) {
   arquivoParametros (populacao, lags)
   arquivoAvaliacoes (populacao)
   p = 1:nPOPULACAO
-  lapply (p, function (x)
-             arquivosSeries (populacao[[x]], x))
+  parLapply (cl, p, function (x)
+                    arquivosSeries (populacao[[x]], x))
   setwd (diretorio)
   
   return (ciclo)
@@ -73,8 +75,8 @@ MAPEdiferenca = function (populacao) {
   a = round (runif (1, 1, nPOPULACAO))
   individuo = populacao[[a]]$individuo
   
-  MAPE = lapply (populacao, function (x)
-                            abs ((individuo - x$individuo) / individuo))
+  MAPE = parLapply (cl, populacao, function (x)
+                                   abs ((individuo - x$individuo) / individuo))
   MAPEdif = sum (unlist (MAPE)) / (nPOPULACAO * (length (individuo)))
   
   if (is.finite (MAPEdif))

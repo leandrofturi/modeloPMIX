@@ -21,8 +21,8 @@ geraPopulacao = function (entrada, lags, nS) {
   p = 1:nPOPULACAO
   
   populacao = list ()
-  populacao = mclapply (p, function (x)
-                           geraIndividuo (entrada, lags, nS))
+  populacao = parLapply (cl, p, function (x)
+                                geraIndividuo (entrada, lags, nS))
   
   return (populacao)
 }
@@ -31,11 +31,11 @@ geraCruzamento = function (entrada, lags, populacao, nS, Pc, Pm) {
   p = 1:nPOPULACAO
   
   novaPopulacao = list ()
-  novaPopulacao = mclapply (p, function (x)
-                               cruzamentoBLX (entrada, lags, populacao, nS, Pc))
+  novaPopulacao = parLapply (cl, p, function (x)
+                                    cruzamentoBLX (entrada, lags, populacao, nS, Pc))
   
-  novaPopulacao = mclapply (p, function (x)
-                               mutacao (novaPopulacao[[x]], entrada, lags, novaPopulacao, nS, Pm))
+  novaPopulacao = parLapply (cl, p, function (x)
+                                    mutacao (novaPopulacao[[x]], entrada, lags, novaPopulacao, nS, Pm))
   
   return (novaPopulacao)
 }
