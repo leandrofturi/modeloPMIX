@@ -1,7 +1,5 @@
 source ('avaliacao.R')
 
-nPOPULACAO = 10
-
 geraIndividuo = function (entrada, lags, nS) {
   nINDIVIDUO = sum (lags) * 12
   individuoMIN = -1
@@ -15,7 +13,7 @@ geraIndividuo = function (entrada, lags, nS) {
   }
   avaliacao = avaliacao (entrada, momentos)
   
-  final = list (individuo = individuo, avaliacao = avaliacao)
+  final = list (individuo = individuo, serie = momentos$serie, avaliacao = avaliacao)
   return (final)
 }
 
@@ -64,7 +62,7 @@ cruzamentoBLX = function (entrada, lags, populacao, nS, Pc) {
   }
   avaliacao = avaliacao (entrada, momentos)
   
-  final = list (individuo = filho, avaliacao = avaliacao)
+  final = list (individuo = filho, serie = momentos$serie, avaliacao = avaliacao)
   return (final)
 }
 

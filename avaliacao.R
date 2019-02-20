@@ -15,7 +15,7 @@ momentos = function (entrada, parametros, lags, nS) {
   facMensal = correlograma (serieSint, entrada$lagMensal, F)[-1, ]
   somRes = residuos$somRes
   
-  final = list (media = media, dp = dp, facAnual = facAnual, facMensal = facMensal, somRes = somRes)
+  final = list (serie = serieSint, media = media, dp = dp, facAnual = facAnual, facMensal = facMensal, somRes = somRes)
   return (final)
 }
 

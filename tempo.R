@@ -1,61 +1,98 @@
-source ('entrada.R')
 source ('inicializaPop.R')
 source ('mecanismos.R')
 
-tempoMAX = 10000
+# PARAMETROS ALGORITMO GENETICO
+nPOPULACAO = 500
+cicloMAX = 10000
+MAPEdiferencaMAX = 0.002
+
+#PARAMETROS FUNCAO OBJETIVO
+nSINTETICA = 10000
+probCRUZAMENTO = 0.8
+probMUTACAO = 0.05
 
 NSGA = function (dados, lags) {
-  series = entrada (dados)
-  pop = geraPopulacao (series, lags, T, NA)
-  nINDIVIDUO = (sum (lags))*12
-  populacaoTotal = matrix (numeric (0), ncol = nINDIVIDUO, nrow = 2*nPOPULACAO)
-  avaliacaoTotal = list ()
-  populacao = matrix (numeric (0), ncol = nINDIVIDUO, nrow = nPOPULACAO)
-  avaliacao = list ()
-  ciclo = T
-  tempo = 0
+  entrada = entrada (dados)
+  print ("Formando populacao inicial...")
+  populacao = geraPopulacao (entrada, lags, nSINTETICA)
+  populacao = CCO (populacao)
+  diversidade = TRUE
+  ciclo <<- 0
   
-  while ((ciclo) && (tempo <= tempoMAX)) {
-    novaPop = geraPopulacao (series, lags, F, pop)
-    populacaoTotal[(1:nPOPULACAO), ] = pop$populacao
-    populacaoTotal[((nPOPULACAO+1):(2*nPOPULACAO)), ] = novaPop$populacao
-    avaliacaoTotal[(1:nPOPULACAO)] = pop$avaliacao
-    avaliacaoTotal[((nPOPULACAO+1):(2*nPOPULACAO))] = novaPop$avaliacao
+  while ((ciclo < cicloMAX) && (diversidade)) {
+    ciclo <<- ciclo + 1
+    if ((ciclo %% 1000) == 0) print (paste ("ciclo", ciclo))
     
-    popTotal = list (populacao = populacaoTotal, avaliacao = avaliacaoTotal)
-    popTotal = CCO (popTotal)
+    novaPopulalacao = geraCruzamento (entrada, lags, populacao, nSINTETICA, probCRUZAMENTO, probMUTACAO)
+    populacaoTotal = c (populacao, novaPopulalacao)
+    populacaoTotal = CCO (populacaoTotal)
+    populacao = populacaoTotal[1:nPOPULACAO]
     
-    populacao = popTotal$populacao[(1:nPOPULACAO), ]
-    avaliacao = popTotal$avaliacao[1:nPOPULACAO]
-    pop = list (populacao = populacao, avaliacao = avaliacao)
-    tempo = tempo + 1
-    print (paste ("ciclo", tempo))
-    
-    if ((MAPEdiferenca (populacao)) < 0.002)
-      ciclo = F
+    if (MAPEdiferenca(populacao) <= MAPEdiferencaMAX)
+      diversidade = FALSE
   }
   
-  somResFinal = sapply (pop$avaliacao, function(x) (x$somRes))
-  pop$populacao = pop$populacao[order (somResFinal), ]
-  pop$avaliacao = pop$avaliacao[order (somResFinal)]
-  sink ("resultado.txt")
-  print (pop)
-  sink ()
+  diretorio = getwd ()
   
-  #tabelaserieS = data.frame (melhorSerie)
-  #rownames(tabelaserieS) = c(1:10000)
-  #colnames(tabelaserieS) = c("JANEIRO", "FEVEREIRO", "MARCO", "ABRIL", "MAIO", "JUNHO", "JULHO", "AGOSTO", "SETEMBRO", "OUTUBRO", "NOVEMBRO", "DEZEMBRO")
-  #write.csv2(tabelaserieS, "Serie Sintetica.csv")
+  estacao = substr (dados, start = 1, stop = (nchar (dados)-4))
+  if (! (dir.exists (estacao)))
+    dir.create (file.path (estacao))
+  setwd (estacao)
+  data = format (Sys.time (), "%F %Hh%M")
+  ordem = paste0 ("PMIX(", lags[1], ",", lags[2], ",", lags[3], ",", lags[4], ") ", data)
+  if (! (dir.exists (ordem)))
+    dir.create (file.path (ordem))
+  setwd (ordem)
+  if (! (dir.exists ("series")))
+    dir.create (file.path ("series"))
   
-  return ( )
+  arquivoParametros (populacao, lags)
+  arquivoAvaliacoes (populacao)
+  p = 1:nPOPULACAO
+  lapply (p, function (x)
+             arquivosSeries (populacao[[x]], x))
+  setwd (diretorio)
+  
+  return (ciclo)
 }
 
 MAPEdiferenca = function (populacao) {
-  individuo = populacao [(round (runif (1, 1, nPOPULACAO))), ]
-  diferencas = abs (t ((t (populacao) - individuo) / individuo))
-  MAPEdif = sum (diferencas) / length (populacao)
-  if (max (is.na (MAPEdif) || is.nan (MAPEdif) || is.infinite (MAPEdif)))
-    return (1)
-  else
+  a = round (runif (1, 1, nPOPULACAO))
+  individuo = populacao[[a]]$individuo
+  
+  MAPE = lapply (populacao, function (x)
+                            abs ((individuo - x$individuo) / individuo))
+  MAPEdif = sum (unlist (MAPE)) / (nPOPULACAO * (length (individuo)))
+  
+  if (is.finite (MAPEdif))
     return (MAPEdif)
+  else
+    return (1)
+}
+
+arquivosSeries = function (individuo, p) {
+  nome = paste0 ("series/serie_", p, ".csv")
+  serie = data.frame (individuo$serie)
+  rownames (serie) = c (1:nSINTETICA)
+  colnames (serie) = c ("JANEIRO", "FEVEREIRO", "MARCO", "ABRIL", "MAIO", "JUNHO", "JULHO", "AGOSTO", "SETEMBRO", "OUTUBRO", "NOVEMBRO", "DEZEMBRO")
+  write.csv2 (serie, nome)
+}
+
+arquivoParametros = function (populacao, lags) {
+  parametros = t (sapply (populacao, function (x)
+                                     x$individuo))
+  parametros = data.frame (parametros)
+  rownames (parametros) = c (1:nPOPULACAO)
+  colnames (parametros) = rep (c ("JANEIRO", "FEVEREIRO", "MARCO", "ABRIL", "MAIO", "JUNHO", "JULHO", "AGOSTO", "SETEMBRO", "OUTUBRO", "NOVEMBRO", "DEZEMBRO"), sum (lags))
+  write.csv2 (parametros, "parametros.csv")
+}
+
+arquivoAvaliacoes = function (populacao) {
+  avaliacoes = sapply (populacao, function (x)
+                                  x$avaliacao)
+  avaliacoes = t (matrix (as.numeric (avaliacoes), ncol = length (populacao)))
+  avaliacoes = data.frame (avaliacoes)
+  rownames (avaliacoes) = c (1:nPOPULACAO)
+  colnames (avaliacoes) = c("MAPEmedia", "MAPEdp", "MAPEfacAnual", "MAPEfacMensal", "SomRes")
+  write.csv2 (avaliacoes, "avaliacoes.csv")
 }
