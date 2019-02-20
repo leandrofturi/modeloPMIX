@@ -2,8 +2,10 @@ source ("entrada.R")
 source ('inicializaPop.R')
 source ('mecanismos.R')
 
-# PARAMETROS ALGORITMO GENETICO
-nPOPULACAO = 500
+require ('parallel')
+
+#PARAMETROS ALGORITMO GENETICO
+nPOPULACAO = 50
 cicloMAX = 10000
 MAPEdiferencaMAX = 0.002
 
@@ -18,19 +20,29 @@ NSGA = function (dados, lags) {
   populacao = geraPopulacao (entrada, lags, nSINTETICA)
   populacao = CCO (populacao)
   diversidade = TRUE
+  avaliacaoAutocorrelacao = FALSE
   ciclo <<- 0
   
   while ((ciclo < cicloMAX) && (diversidade)) {
     ciclo <<- ciclo + 1
-    if ((ciclo %% 1000) == 0) print (paste ("ciclo", ciclo))
+    #if ((ciclo %% 1000) == 0) print (paste ("ciclo", ciclo))
+    print (paste ("ciclo", ciclo))
     
     novaPopulalacao = geraCruzamento (entrada, lags, populacao, nSINTETICA, probCRUZAMENTO, probMUTACAO)
     populacaoTotal = c (populacao, novaPopulalacao)
-    populacaoTotal = CCO (populacaoTotal)
-    populacao = populacaoTotal[1:nPOPULACAO]
+    if (avaliacaoAutocorrelacao)
+      populacaoTotal = CCOfac (populacaoTotal)
+    else
+        populacaoTotal = CCO (populacaoTotal)
     
-    if (MAPEdiferenca(populacao) <= MAPEdiferencaMAX)
-      diversidade = FALSE
+    populacao = populacaoTotal[1:nPOPULACAO]
+    rank = FNS (populacao)
+    
+    if (max (rank) == 0) {
+      avaliacaoAutocorrelacao = TRUE
+      if (MAPEdiferenca(populacao) <= MAPEdiferencaMAX)
+        diversidade = FALSE
+    }
   }
   
   diretorio = getwd ()
