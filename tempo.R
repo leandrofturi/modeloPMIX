@@ -1,3 +1,4 @@
+source ("entrada.R")
 source ('inicializaPop.R')
 source ('mecanismos.R')
 
