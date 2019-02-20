@@ -2,19 +2,24 @@ source ("entrada.R")
 source ('inicializaPop.R')
 source ('mecanismos.R')
 
-require ('parallel')
-cores = detectCores () - 1
-cl = makeCluster (1)
-
 #PARAMETROS ALGORITMO GENETICO
-nPOPULACAO = 50
-cicloMAX = 10000
-MAPEdiferencaMAX = 0.002
+nPOPULACAO <<- 50
+cicloMAX <<- 10000
+MAPEdiferencaMAX <<- 0.002
 
 #PARAMETROS FUNCAO OBJETIVO
-nSINTETICA = 10000
-probCRUZAMENTO = 0.8
-probMUTACAO = 0.05
+nSINTETICA <<- 10000
+probCRUZAMENTO <<- 0.8
+probMUTACAO <<- 0.05
+
+require ('parallel')
+cores = detectCores () - 2
+cl = makeCluster (cores)
+clusterExport (cl, list ("geraIndividuo", "cruzamentoBLX", "mutacao", "torneio", "momentos", "avaliacao", "estouro",
+                         "FNS", "dominanciaCompleta", "CDA", "distancia", "FNSfac", "dominanciaCompletaFac", "residuos",
+                         "entrada", "correlograma", "correlogramaAnual", "lagAnualSignificativo", "lagMensalSignificativo", "serieSint",
+                         "nPOPULACAO", "cicloMAX", "MAPEdiferencaMAX", "nSINTETICA", "probCRUZAMENTO", "probMUTACAO"))
+
 
 NSGA = function (dados, lags) {
   entrada = entrada (dados)
@@ -67,8 +72,8 @@ NSGA = function (dados, lags) {
   parLapply (cl, p, function (x)
                     arquivosSeries (populacao[[x]], x))
   setwd (diretorio)
-  
-  return (ciclo)
+
+  stopCluster (cl)
 }
 
 MAPEdiferenca = function (populacao) {
