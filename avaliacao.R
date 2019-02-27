@@ -5,7 +5,8 @@ source ('sumQuadRes.R')
 momentos = function (entrada, parametros, lags, nS) {
   residuos = residuos (entrada$serieHN, parametros, lags)
   dpRes = residuos$dpRes
-  serieSint = serieSint (parametros, dpRes, lags, nS)
+  serieSint = serieSint (parametros, dpRes, lags, (nS + 50))
+  serieSint = serieSint[-(1:50), ]
   serieSint = t ((t (serieSint) * entrada$dpHL) + entrada$mediaHL)
   serieSint = exp (serieSint)
   

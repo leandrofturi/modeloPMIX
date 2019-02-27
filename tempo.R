@@ -4,8 +4,8 @@ source ('mecanismos.R')
 
 #PARAMETROS ALGORITMO GENETICO
 nPOPULACAO <<- 50
-cicloMAX <<- 10000
-MAPEdiferencaMAX <<- 0.002
+cicloMAX <<- 5000
+MAPEdiferencaMAX <<- 0.25
 
 #PARAMETROS FUNCAO OBJETIVO
 nSINTETICA <<- 10000
@@ -14,14 +14,15 @@ probMUTACAO <<- 0.05
 
 require ('parallel')
 cores = detectCores () - 2
-cl = makeCluster (cores)
+cl = makeCluster (8)
 clusterExport (cl, list ("geraIndividuo", "cruzamentoBLX", "mutacao", "torneio", "momentos", "avaliacao", "estouro",
-                         "FNS", "dominanciaCompleta", "CDA", "distancia", "FNSfac", "dominanciaCompletaFac", "residuos",
+                         "FNS", "dominanciaCompleta", "CDA", "distancia", "residuos",
                          "entrada", "correlograma", "correlogramaAnual", "lagAnualSignificativo", "lagMensalSignificativo", "serieSint",
                          "nPOPULACAO", "cicloMAX", "MAPEdiferencaMAX", "nSINTETICA", "probCRUZAMENTO", "probMUTACAO"))
 
 
 NSGA = function (dados, lags) {
+  inicio = format (Sys.time (), "%F %Hh%M")
   entrada = entrada (dados)
   print ("Formando populacao inicial...")
   populacao = geraPopulacao (entrada, lags, nSINTETICA)
@@ -32,24 +33,14 @@ NSGA = function (dados, lags) {
   
   while ((ciclo < cicloMAX) && (diversidade)) {
     ciclo <<- ciclo + 1
-    #if ((ciclo %% 1000) == 0) print (paste ("ciclo", ciclo))
-    print (paste ("ciclo", ciclo))
+    print (ciclo)
     
     novaPopulalacao = geraCruzamento (entrada, lags, populacao, nSINTETICA, probCRUZAMENTO, probMUTACAO)
-    populacaoTotal = c (populacao, novaPopulalacao)
-    if (avaliacaoAutocorrelacao)
-      populacaoTotal = CCOfac (populacaoTotal)
-    else
-        populacaoTotal = CCO (populacaoTotal)
-    
+    populacaoTotal = CCO (populacaoTotal)
     populacao = populacaoTotal[1:nPOPULACAO]
-    rank = FNS (populacao)
     
-    if (max (rank) == 0) {
-      avaliacaoAutocorrelacao = TRUE
-      if (MAPEdiferenca(populacao) <= MAPEdiferencaMAX)
-        diversidade = FALSE
-    }
+    if (MAPEdiferenca (populacao) <= MAPEdiferencaMAX)
+      diversidade = FALSE
   }
   
   diretorio = getwd ()
@@ -69,11 +60,17 @@ NSGA = function (dados, lags) {
   arquivoParametros (populacao, lags)
   arquivoAvaliacoes (populacao)
   p = 1:nPOPULACAO
-  parLapply (cl, p, function (x)
-                    arquivosSeries (populacao[[x]], x))
+  lapply (p, function (x)
+             arquivosSeries (populacao[[x]], x))
   setwd (diretorio)
 
   stopCluster (cl)
+  fim = format (Sys.time (), "%F %Hh%M")
+	
+  inicio = paste ("inicio:", inicio)
+  fim = paste ("fim:", fim)
+  print (inicio)
+  print (fim)
 }
 
 MAPEdiferenca = function (populacao) {

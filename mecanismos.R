@@ -77,44 +77,11 @@ CCO = function (populacao) {
   return  (populacao)
 }
 
-#AVALIAR SOMENTE AUTOCORRELACOES
-FNSfac = function (populacao) {
-  npIndividual = sapply (populacao, function (x)
-                                    dominanciaCompletaFac (x, populacao))
-  np = apply (npIndividual, 1, sum)
-  np = np - 1
-  
-  return (np)
-}
-
-dominanciaCompletaFac = function (individuo, populacao) {
-  SpIndividual = sapply (populacao, function (x)
-    if ((individuo$avaliacao$facAnual <= x$avaliacao$facAnual) && (individuo$avaliacao$facMensal <= x$avaliacao$facMensal)) {
-      return (1)
-    }
-    else
-      return (0))
-}
-
-CCOfac = function (populacao) {
-  np = FNSfac (populacao)
-  p = sort (unique (np))
-  fronteiras = sapply (p, function (x)
-    which (np %in% x))
-  populacaoFronteiras = parLapply (cl, fronteiras, function (x)
-                                                   populacao[x])
-  diversidadeFronteiras = parLapply (cl, populacaoFronteiras, CDA)
-  nindividuos = sapply (diversidadeFronteiras, length)
-  nindividuosAc = sapply ((1:(length (p))), function (x)
-    sum (nindividuos[1:x]))
-  nindividuosAc = nindividuosAc - nindividuos
-  nindividuos = unlist (mapply (rep, times = nindividuos, x = nindividuosAc))
-  diversidadeFronteiras = unlist (diversidadeFronteiras)
-  diversidadeFronteiras = diversidadeFronteiras + nindividuos
-  
-  diversidade = order (np)
-  diversidade = diversidade[diversidadeFronteiras]
-  
+CCOSomRes = function (populacao) {
+  p = 1:nPOPULACAO
+  somRes = sapply (p, function (x)
+                               populacao[[x]]$avaliacao$somRes)
+  diversidade = order (somRes)
   populacao = populacao[diversidade]
   
   return  (populacao)

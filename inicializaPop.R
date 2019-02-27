@@ -45,7 +45,7 @@ cruzamentoBLX = function (entrada, lags, populacao, nS, Pc) {
   
   ALFA = 0.5
   beta = runif (nINDIVIDUO, -ALFA, 1 + ALFA)
-  homog = runif (nINDIVIDUO, 0, 1) >= Pc
+  homog = runif (nINDIVIDUO, 0, 1) <= Pc
   
   pais = torneio (3)
   pai1 = populacao[[pais[1]]]$individuo
