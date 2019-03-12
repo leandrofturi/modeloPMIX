@@ -56,24 +56,17 @@ distancia = function (avaliacoes, n) {
 CCO = function (populacao) {
   np = FNS (populacao)
   p = sort (unique (np))
-  fronteiras = sapply (p, function (x)
+  fronteiras = lapply (p, function (x)
                           which (np %in% x))
-  populacaoFronteiras = parLapply (cl, fronteiras, function (x)
-                                                   populacao[x])
-  diversidadeFronteiras = parLapply (cl, populacaoFronteiras, CDA)
-  nindividuos = sapply (diversidadeFronteiras, length)
-  nindividuosAc = sapply ((1:(length (p))), function (x)
-                                            sum (nindividuos[1:x]))
-  nindividuosAc = nindividuosAc - nindividuos
-  nindividuos = unlist (mapply (rep, times = nindividuos, x = nindividuosAc))
-  diversidadeFronteiras = unlist (diversidadeFronteiras)
-  diversidadeFronteiras = diversidadeFronteiras + nindividuos 
-  
-  diversidade = order (np)
-  diversidade = diversidade[diversidadeFronteiras]
+  populacaoFronteiras = lapply (fronteiras, function (x)
+                                            populacao[x])
+  diversidadeFronteiras = lapply (populacaoFronteiras, CDA)
+  p = 1:length (p)
+  diversidade = sapply (p, function (x)
+                           fronteiras[[x]][diversidadeFronteiras[[x]]])
+  diversidade = unlist (diversidade)
   
   populacao = populacao[diversidade]
-  
   return  (populacao)
 }
 

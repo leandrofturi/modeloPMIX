@@ -4,8 +4,8 @@ source ('mecanismos.R')
 
 #PARAMETROS ALGORITMO GENETICO
 nPOPULACAO <<- 50
-cicloMAX <<- 5000
-MAPEdiferencaMAX <<- 0.25
+cicloMAX <<- 10000
+MAPEdiferencaMAX <<- 0.15
 
 #PARAMETROS FUNCAO OBJETIVO
 nSINTETICA <<- 10000
@@ -14,12 +14,12 @@ probMUTACAO <<- 0.05
 
 require ('parallel')
 cores = detectCores () - 2
-cl = makeCluster (8)
+cores = max (1, cores)
+cl = makeCluster (1)
 clusterExport (cl, list ("geraIndividuo", "cruzamentoBLX", "mutacao", "torneio", "momentos", "avaliacao", "estouro",
                          "FNS", "dominanciaCompleta", "CDA", "distancia", "residuos",
                          "entrada", "correlograma", "correlogramaAnual", "lagAnualSignificativo", "lagMensalSignificativo", "serieSint",
                          "nPOPULACAO", "cicloMAX", "MAPEdiferencaMAX", "nSINTETICA", "probCRUZAMENTO", "probMUTACAO"))
-
 
 NSGA = function (dados, lags) {
   inicio = format (Sys.time (), "%F %Hh%M")
@@ -27,22 +27,18 @@ NSGA = function (dados, lags) {
   print ("Formando populacao inicial...")
   populacao = geraPopulacao (entrada, lags, nSINTETICA)
   populacao = CCO (populacao)
-  diversidade = TRUE
-  avaliacaoAutocorrelacao = FALSE
   ciclo <<- 0
   
-  while ((ciclo < cicloMAX) && (diversidade)) {
+  while ((ciclo < cicloMAX) && (MAPEdiferenca (populacao) > MAPEdiferencaMAX)) {
     ciclo <<- ciclo + 1
     print (ciclo)
     
     novaPopulalacao = geraCruzamento (entrada, lags, populacao, nSINTETICA, probCRUZAMENTO, probMUTACAO)
+    populacaoTotal = c(populacao, novaPopulalacao)
     populacaoTotal = CCO (populacaoTotal)
     populacao = populacaoTotal[1:nPOPULACAO]
-    
-    if (MAPEdiferenca (populacao) <= MAPEdiferencaMAX)
-      diversidade = FALSE
   }
-  
+  stopCluster (cl)
   diretorio = getwd ()
   
   estacao = substr (dados, start = 1, stop = (nchar (dados)-4))
@@ -64,7 +60,6 @@ NSGA = function (dados, lags) {
              arquivosSeries (populacao[[x]], x))
   setwd (diretorio)
 
-  stopCluster (cl)
   fim = format (Sys.time (), "%F %Hh%M")
 	
   inicio = paste ("inicio:", inicio)
@@ -77,7 +72,7 @@ MAPEdiferenca = function (populacao) {
   a = round (runif (1, 1, nPOPULACAO))
   individuo = populacao[[a]]$individuo
   
-  MAPE = parLapply (cl, populacao, function (x)
+  MAPE = lapply (populacao, function (x)
                                    abs ((individuo - x$individuo) / individuo))
   MAPEdif = sum (unlist (MAPE)) / (nPOPULACAO * (length (individuo)))
   
