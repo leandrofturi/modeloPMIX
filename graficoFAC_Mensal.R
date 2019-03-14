@@ -2,7 +2,7 @@ MESES = c ("Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out",
 
 graficoFACs = function (serieH, n, lag) {
   series = leituraArquivos (n)
-  inicializaGrafico (lag)
+  inicializaGrafico (serieH, lag)
   p = 1:n
   lapply (p, function (x)
              graficoFAC (series[[x]], lag, 'green'))
@@ -20,19 +20,23 @@ leituraArquivos = function (n) {
   return (series)
 }
 
-inicializaGrafico = function (lag) {
+inicializaGrafico = function (serieH, lag) {
   par (lwd = 1, col= 'black')
   plot (NA, main = paste ("Autocorrelacoes mensais - lag", lag), xlim = c (1,12), ylim = c (-1, 1), xlab = "", ylab = "", axes = F, type = "n")
   axis (1, 1:12, MESES)
   axis (2, -1:1, c (-1, 0, 1))
   par (lty = 1)
-  lines (1:12, rep(0,12))
+  lines (1:12, rep(0, 12))
+  intConfianca = 1.96 / sqrt (length (serieH) / 12)
+  par (lty = 2)
+  lines (1:12, rep(intConfianca, 12))
+  lines (1:12, rep(-intConfianca, 12))
   box ()
 }
 
 graficoFAC = function (serie, lag, cor) {
   fac = correlograma (serie, lag, F)[(lag + 1), ]
-  par (col = cor)
+  par (col = cor, lty = 1)
   points (fac, type = "o", pch = 20)
 }
 
@@ -78,27 +82,6 @@ correlograma = function(serie, lagMax, grafico) {
     }
   }
   return(fac)
-}
-
-correlogramaAnual = function (serie, lagMax) {
-  serieAnual = apply (serie, 1, sum)
-  facAnual = acf (serieAnual, lag.max = lagMax, type = c("correlation"), plot = F, na.action = na.pass)
-  facAnual = as.numeric (facAnual$acf)
-  
-  return (facAnual)
-}
-
-lagAnualSignificativo = function (serie) {
-  intConfianca = 1.96 / sqrt (length (serie) / 12)
-  lagAnual = 12
-  while (lagAnual < (length (serie) / 12)) {
-    facAnual = correlogramaAnual (serie, lagAnual)[-1]
-    lagAnualMin = sum (facAnual >= intConfianca)
-    if (lagAnualMin == lagAnual)
-      lagAnual = lagAnual + 12
-    else
-      return (lagAnualMin)
-  }
 }
 
 lagMensalSignificativo = function (serie) {
