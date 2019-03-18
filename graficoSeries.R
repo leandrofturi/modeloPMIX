@@ -1,16 +1,18 @@
 MESES = c ("Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez")
 
-graficoSeries = function (serieH, n) {
-  series = leituraArquivos (n)
+nPOPULACAO = 50
+
+graficoSeries = function (serieH, p) {
+  series = leituraArquivos ( )
   inicializaGrafico (serieH)
-  p = 1:n
+  cores = rainbow (nPOPULACAO)
   lapply (p, function (x)
-             graficoSerie (series[[x]], 'green'))
-  graficoSerie (serieH, 'red')
+             graficoSerie (series[[x]], cores[x]))
+  graficoSerie (serieH, 'black')
 }
 
-leituraArquivos = function (n) {
-  p = 1:n
+leituraArquivos = function ( ) {
+  p = 1:nPOPULACAO
   nomes = sapply (p, function (x)
                      paste0 ("serie_", x, ".csv"))
   series = lapply (p, function (x)

@@ -1,14 +1,16 @@
-graficoFACs = function (serieH, n, lagMax) {
-  series = leituraArquivos (n)
+nPOPULACAO = 50
+
+graficoFACs = function (serieH, p, lagMax) {
+  series = leituraArquivos ( )
   inicializaGrafico (serieH, lagMax)
-  p = 1:n
+  cores = rainbow (nPOPULACAO)
   lapply (p, function (x)
-             graficoFAC (series[[x]], lagMax, 'green'))
-  graficoFAC (serieH, lagMax, 'red')
+             graficoFAC (series[[x]], lagMax, cores[x]))
+  graficoFAC (serieH, lagMax, 'black')
 }
 
-leituraArquivos = function (n) {
-  p = 1:n
+leituraArquivos = function ( ) {
+  p = 1:nPOPULACAO
   nomes = sapply (p, function (x)
     paste0 ("serie_", x, ".csv"))
   series = lapply (p, function (x)

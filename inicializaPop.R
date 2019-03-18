@@ -31,18 +31,20 @@ geraCruzamento = function (entrada, lags, populacao, nS, Pc, Pm) {
   p = 1:nPOPULACAO
   
   novaPopulacao = list ()
-  novaPopulacao = parLapply (cl, p, function (x)
-                                    cruzamentoBLX (entrada, lags, populacao, nS, Pc))
-  
-  novaPopulacao = parLapply (cl, p, function (x)
-                                    mutacao (novaPopulacao[[x]], entrada, lags, novaPopulacao, nS, Pm))
+  novaPopulacao = lapply (p, function (x)
+                                    cruzamentoBLX (entrada, lags, populacao, nS, Pc, Pm))
   
   return (novaPopulacao)
 }
 
-cruzamentoBLX = function (entrada, lags, populacao, nS, Pc) {
+cruzamentoBLX = function (entrada, lags, populacao, nS, Pc, Pm) {
   nINDIVIDUO = sum (lags) * 12
   
+  if ((runif (1, 0, 1)) < Pm) {
+    individuo = geraIndividuo (entrada, lags, nS)
+    return (individuo)
+  }
+    
   ALFA = 0.5
   beta = runif (nINDIVIDUO, -ALFA, 1 + ALFA)
   homog = runif (nINDIVIDUO, 0, 1) <= Pc
@@ -66,17 +68,10 @@ cruzamentoBLX = function (entrada, lags, populacao, nS, Pc) {
   return (final)
 }
 
-mutacao = function (individuo, entrada, lags, populacao, nS, Pm) {
-  if ((runif (1, 0, 1)) < Pm)
-    individuo = geraIndividuo (entrada, lags, nS)
-  
-  return (individuo)
-}
-
 torneio = function (nPossibilidades) {
   possiveis = sample (nPOPULACAO, nPossibilidades, replace = F)
   possiveis = sort (possiveis)
-  possiveis = possiveis[-(3:nPossibilidades)]
+  possiveis = possiveis[1:2]
   
   return (possiveis)
 }
