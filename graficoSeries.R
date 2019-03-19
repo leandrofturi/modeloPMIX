@@ -3,7 +3,7 @@ MESES = c ("Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out",
 nPOPULACAO = 50
 
 graficoSeries = function (serieH, p) {
-  series = leituraArquivos ( )
+  series = leituraArquivos (p)
   inicializaGrafico (serieH)
   cores = rainbow (nPOPULACAO)
   lapply (p, function (x)
@@ -11,8 +11,7 @@ graficoSeries = function (serieH, p) {
   graficoSerie (serieH, 'black')
 }
 
-leituraArquivos = function ( ) {
-  p = 1:nPOPULACAO
+leituraArquivos = function (p) {
   nomes = sapply (p, function (x)
                      paste0 ("serie_", x, ".csv"))
   series = lapply (p, function (x)
@@ -26,7 +25,7 @@ inicializaGrafico = function (serieH) {
   media = apply (serieH, 2, mean)
   desvio = apply (serieH, 2, sd)
   par (lwd = 1, col= 'black')
-  plot (NA, main = "Medias e Desvios", xlim = c (1,12), ylim = c (0, 2*(max (media + desvio))), xlab = "", ylab = "", axes = F, type = "n")
+  plot (NA, main = "Medias e Desvios", xlim = c (1,12), ylim = c (0, 1.2*(max (media + desvio))), xlab = "", ylab = "Vazões médias mensais (m^3/s)", axes = T, type = "n")
   axis (1, 1:12, MESES)
   box ()
 }
