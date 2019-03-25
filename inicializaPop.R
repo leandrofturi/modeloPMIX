@@ -17,14 +17,52 @@ geraIndividuo = function (entrada, lags, nS) {
   return (final)
 }
 
-geraPopulacao = function (entrada, lags, nS) {
-  p = 1:nPOPULACAO
+avaliaIndividuo = function (entrada, lags, nS, individuo) {
+  momentos = momentos (entrada, individuo, lags, nS)
+  if (estouro (momentos))
+    return (NULL)
   
+  avaliacao = avaliacao (entrada, momentos)
+  
+  final = list (individuo = individuo, serie = momentos$serie, avaliacao = avaliacao)
+  return (final)
+}
+
+geraPopulacao = function (entrada, lags, nS, parametrosIniciais) {
   populacao = list ()
-  populacao = parLapply (cl, p, function (x)
-                                geraIndividuo (entrada, lags, nS))
   
+  if ((length (parametrosIniciais)) == 1) {
+    p = 1:nPOPULACAO
+    populacao = lapply (p, function (x)
+                           geraIndividuo (entrada, lags, nS))
+  }
+  
+  else {
+    p = 1:((length(parametrosIniciais)) / (12*(sum (lags))))
+    populacao = lapply (p, function (x)
+                           avaliaIndividuo (entrada, lags, nS, parametrosIniciais[x, ]))
+    populacao = populacao[lengths(populacao) != 0]
+    
+    if ((length (populacao)) < nPOPULACAO) {
+      print ("gerando crossover entre os individuos...")
+      n = nPOPULACAO - (length (populacao))
+      populacao = completaPopulacao (entrada, lags, populacao, nS, n)
+    }
+  }
+  
+  print ("populacao completa!")
   return (populacao)
+}
+
+completaPopulacao = function (entrada, lags, populacao, nS, n) {
+  p = 1:n
+  
+  populacaoRestante = list ()
+  populacaoRestante = lapply (p, function (x)
+                                 cruzamentoBLX (entrada, lags, populacao, nS, 1, -1))
+  
+  populacaoFinal = c (populacao, populacaoRestante)
+  return (populacaoFinal)
 }
 
 geraCruzamento = function (entrada, lags, populacao, nS, Pc, Pm) {
@@ -32,7 +70,7 @@ geraCruzamento = function (entrada, lags, populacao, nS, Pc, Pm) {
   
   novaPopulacao = list ()
   novaPopulacao = lapply (p, function (x)
-                                    cruzamentoBLX (entrada, lags, populacao, nS, Pc, Pm))
+                             cruzamentoBLX (entrada, lags, populacao, nS, Pc, Pm))
   
   return (novaPopulacao)
 }
@@ -49,7 +87,7 @@ cruzamentoBLX = function (entrada, lags, populacao, nS, Pc, Pm) {
   beta = runif (nINDIVIDUO, -ALFA, 1 + ALFA)
   homog = runif (nINDIVIDUO, 0, 1) <= Pc
   
-  pais = torneio (3)
+  pais = torneio (3, length (populacao))
   pai1 = populacao[[pais[1]]]$individuo
   pai2 = populacao[[pais[2]]]$individuo
   
@@ -57,8 +95,10 @@ cruzamentoBLX = function (entrada, lags, populacao, nS, Pc, Pm) {
   momentos = momentos (entrada, filho, lags, nS)
   
   while (estouro (momentos)) {
-    beta = runif (nINDIVIDUO, -ALFA, 1 + ALFA)
-    homog = runif (nINDIVIDUO, 0, 1) >= Pc
+    pais = torneio (3, length (populacao))
+    pai1 = populacao[[pais[1]]]$individuo
+    pai2 = populacao[[pais[2]]]$individuo
+    
     filho = pai1 + homog*beta*(pai2 - pai1)
     momentos = momentos (entrada, filho, lags, nS)
   }
@@ -68,8 +108,9 @@ cruzamentoBLX = function (entrada, lags, populacao, nS, Pc, Pm) {
   return (final)
 }
 
-torneio = function (nPossibilidades) {
-  possiveis = sample (nPOPULACAO, nPossibilidades, replace = F)
+torneio = function (nPossibilidades, n) {
+  nPossibilidades = min (nPossibilidades, n)
+  possiveis = sample (n, nPossibilidades, replace = F)
   possiveis = sort (possiveis)
   possiveis = possiveis[1:2]
   

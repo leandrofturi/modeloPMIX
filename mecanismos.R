@@ -1,21 +1,22 @@
 FNS = function (populacao) {
-  npIndividual = sapply (populacao, function (x)
-                                    dominanciaCompleta (x, populacao))
-  np = apply (npIndividual, 1, sum)
+  npIndividual = lapply (populacao, function (x)
+                                    unlist (dominanciaCompleta (x, populacao)))
+  
+  np = unlist (lapply (npIndividual, sum))
   np = np - 1
   
   return (np)
 }
 
-dominanciaCompleta = function (individuo, populacao) {
-  SpIndividual = sapply (populacao, function (x)
-    if ((individuo$avaliacao$media <= x$avaliacao$media) && (individuo$avaliacao$dp <= x$avaliacao$dp) &&
-        (individuo$avaliacao$facAnual <= x$avaliacao$facAnual) && (individuo$avaliacao$facMensal <= x$avaliacao$facMensal) &&
-        (individuo$avaliacao$somRes <= x$avaliacao$somRes)) {
-      return (1)
-    }
-    else
-      return (0))
+dominanciaCompleta = function (termo, populacao) {
+  lapply (populacao, function (x)
+                     if ((termo$avaliacao$media <= x$avaliacao$media) && (termo$avaliacao$dp <= x$avaliacao$dp) &&
+                         (termo$avaliacao$facAnual <= x$avaliacao$facAnual) && (termo$avaliacao$facMensal <= x$avaliacao$facMensal) &&
+                         (termo$avaliacao$somRes <= x$avaliacao$somRes))
+                     return (1)
+    
+                     else
+                     return (0))
 }
 
 CDA = function (populacao) {
@@ -27,7 +28,7 @@ CDA = function (populacao) {
     avaliacoes = matrix (as.numeric (avaliacoes), ncol = n)
     p = 1:((length (avaliacoes)) / n)
     distancias = t (sapply (p, function (x)
-                               distancia (avaliacoes[x, ], n)))
+      distancia (avaliacoes[x, ], n)))
     
     diversidade = apply (distancias, 2, sum)
     diversidade = order (diversidade, decreasing = T)
@@ -57,13 +58,13 @@ CCO = function (populacao) {
   np = FNS (populacao)
   p = sort (unique (np))
   fronteiras = lapply (p, function (x)
-                          which (np %in% x))
+    which (np %in% x))
   populacaoFronteiras = lapply (fronteiras, function (x)
-                                            populacao[x])
+    populacao[x])
   diversidadeFronteiras = lapply (populacaoFronteiras, CDA)
   p = 1:length (p)
   diversidade = sapply (p, function (x)
-                           fronteiras[[x]][diversidadeFronteiras[[x]]])
+    fronteiras[[x]][diversidadeFronteiras[[x]]])
   diversidade = unlist (diversidade)
   
   populacao = populacao[diversidade]
@@ -73,7 +74,7 @@ CCO = function (populacao) {
 CCOSomRes = function (populacao) {
   p = 1:nPOPULACAO
   somRes = sapply (p, function (x)
-                               populacao[[x]]$avaliacao$somRes)
+    populacao[[x]]$avaliacao$somRes)
   diversidade = order (somRes)
   populacao = populacao[diversidade]
   

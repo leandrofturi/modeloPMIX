@@ -1,31 +1,52 @@
 source ("entrada.R")
 source ('inicializaPop.R')
 source ('mecanismos.R')
+source ('PMIX.R')
 
 #PARAMETROS ALGORITMO GENETICO
 nPOPULACAO <<- 50
-cicloMAX <<- 10000
+cicloMAX <<- 1000
 MAPEdiferencaMAX <<- 0.15
 
 #PARAMETROS FUNCAO OBJETIVO
 nSINTETICA <<- 10000
-probCRUZAMENTO <<- 0.8
-probMUTACAO <<- 0.05
+probCRUZAMENTO <<- 0.5
+probMUTACAO <<- 0
+
+lagSIGNIFICATIVO <<- T
+lagANUAL <<- 1
+lagMENSAL <<- 1
+
+gerarPOWELL <<- T
 
 require ('parallel')
 cores = detectCores () - 2
 cores = max (1, cores)
-cl = makeCluster (1)
-clusterExport (cl, list ("geraIndividuo", "cruzamentoBLX", "mutacao", "torneio", "momentos", "avaliacao", "estouro",
-                         "FNS", "dominanciaCompleta", "CDA", "distancia", "residuos",
-                         "entrada", "correlograma", "correlogramaAnual", "lagAnualSignificativo", "lagMensalSignificativo", "serieSint",
-                         "nPOPULACAO", "cicloMAX", "MAPEdiferencaMAX", "nSINTETICA", "probCRUZAMENTO", "probMUTACAO"))
+#cl = makeCluster (1)
+#clusterExport (cl, list ("geraIndividuo", "cruzamentoBLX", "torneio", "momentos", "avaliacao", "estouro",
+                         #"FNS", "dominanciaCompleta", "CDA", "distancia", "residuos",
+                        #"entrada", "correlograma", "correlogramaAnual", "lagAnualSignificativo", "lagMensalSignificativo", "serieSint",
+                         #"nPOPULACAO", "cicloMAX", "MAPEdiferencaMAX", "nSINTETICA", "probCRUZAMENTO", "probMUTACAO"))
 
 NSGA = function (dados, lags) {
   inicio = format (Sys.time (), "%F %Hh%M")
   entrada = entrada (dados)
   print ("Formando populacao inicial...")
-  populacao = geraPopulacao (entrada, lags, nSINTETICA)
+  
+  if (gerarPOWELL) {
+    saidasPMIX = PMIXs (dados, lags, 25)
+    parametrosIniciais = sapply (saidasPMIX, function (x) x$parametros)
+    parametrosIniciais = t (parametrosIniciais)
+  }
+  
+  else {
+    parametrosIniciais = read.csv ("parametrosIniciais.csv", header = TRUE, sep = ";", dec = ",")
+    parametrosIniciais = parametrosIniciais[-(1:3)]
+    parametrosIniciais = as.vector (as.matrix (parametrosIniciais))
+    parametrosIniciais = matrix (parametrosIniciais, ncol = (sum (lags))*12)
+  }
+
+  populacao = geraPopulacao (entrada, lags, nSINTETICA, parametrosIniciais)
   populacao = CCO (populacao)
   ciclo <<- 0
   
@@ -38,7 +59,7 @@ NSGA = function (dados, lags) {
     populacaoTotal = CCO (populacaoTotal)
     populacao = populacaoTotal[1:nPOPULACAO]
   }
-  stopCluster (cl)
+  #stopCluster (cl)
   diretorio = getwd ()
   
   estacao = substr (dados, start = 1, stop = (nchar (dados)-4))
@@ -59,6 +80,10 @@ NSGA = function (dados, lags) {
   lapply (p, function (x)
              arquivosSeries (populacao[[x]], x))
   setwd (diretorio)
+  
+  sink ("saidasPMIX.txt")
+  print (saidasPMIX)
+  sink ()
 
   fim = format (Sys.time (), "%F %Hh%M")
 	
@@ -86,7 +111,7 @@ arquivosSeries = function (individuo, p) {
   nome = paste0 ("series/serie_", p, ".csv")
   serie = data.frame (individuo$serie)
   rownames (serie) = c (1:nSINTETICA)
-  colnames (serie) = c ("JANEIRO", "FEVEREIRO", "MARCO", "ABRIL", "MAIO", "JUNHO", "JULHO", "AGOSTO", "SETEMBRO", "OUTUBRO", "NOVEMBRO", "DEZEMBRO")
+  colnames (serie) = c ("Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez")
   write.csv2 (serie, nome)
 }
 
@@ -95,7 +120,7 @@ arquivoParametros = function (populacao, lags) {
                                      x$individuo))
   parametros = data.frame (parametros)
   rownames (parametros) = c (1:nPOPULACAO)
-  colnames (parametros) = rep (c ("JANEIRO", "FEVEREIRO", "MARCO", "ABRIL", "MAIO", "JUNHO", "JULHO", "AGOSTO", "SETEMBRO", "OUTUBRO", "NOVEMBRO", "DEZEMBRO"), sum (lags))
+  colnames (parametros) = rep (c ("Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"), sum (lags))
   write.csv2 (parametros, "parametros.csv")
 }
 
