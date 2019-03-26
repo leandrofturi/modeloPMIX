@@ -76,10 +76,10 @@ PMIXs = function (dados, lags, n) {
   print ("obtendo parametros pelo metodo de Powell")
   p = 1:n
   Pinicial = list ()
-  Pinicial = lapply (p, function (x)
-                        geraPinicial ( ))
-  saidas = lapply (Pinicial, function (x)
-                             powell (serie, lags, x))
+  Pinicial = parLapply (cl, p, function (x)
+                               geraPinicial (lags))
+  saidas = parLapply (cl, Pinicial, function (x)
+                                    powell (serie, lags, x))
   
   parametros = sapply (saidas, function (x) x$parametros)
   somRes = sapply (saidas, function (x) x$somRes)
@@ -95,7 +95,7 @@ PMIXs = function (dados, lags, n) {
   return (saidas)
 }
 
-geraPinicial = function ( ) {
+geraPinicial = function (lags) {
   phi = (runif (12*lags[1], 0.5, 1.5)) * (sapply ((round (runif (12*lags[1], -1, 0))), function (x) if (x == 0) x = 1 else x = -1))
   tht = runif (12*lags[2], -0.5, 0.5)
   PHI = (runif (12*lags[3], 0.5, 1.5)) * (sapply ((round (runif (12*lags[3], -1, 0))), function (x) if (x == 0) x = 1 else x = -1))

@@ -33,14 +33,14 @@ geraPopulacao = function (entrada, lags, nS, parametrosIniciais) {
   
   if ((length (parametrosIniciais)) == 1) {
     p = 1:nPOPULACAO
-    populacao = lapply (p, function (x)
-                           geraIndividuo (entrada, lags, nS))
+    populacao = parLapply (cl, p, function (x)
+                                  geraIndividuo (entrada, lags, nS))
   }
   
   else {
     p = 1:((length(parametrosIniciais)) / (12*(sum (lags))))
-    populacao = lapply (p, function (x)
-                           avaliaIndividuo (entrada, lags, nS, parametrosIniciais[x, ]))
+    populacao = parLapply (cl, p, function (x)
+                                  avaliaIndividuo (entrada, lags, nS, parametrosIniciais[x, ]))
     populacao = populacao[lengths(populacao) != 0]
     
     if ((length (populacao)) < nPOPULACAO) {
@@ -58,8 +58,8 @@ completaPopulacao = function (entrada, lags, populacao, nS, n) {
   p = 1:n
   
   populacaoRestante = list ()
-  populacaoRestante = lapply (p, function (x)
-                                 cruzamentoBLX (entrada, lags, populacao, nS, 1, -1))
+  populacaoRestante = parLapply (cl, p, function (x)
+                                        cruzamentoBLX (entrada, lags, populacao, nS, 1, -1))
   
   populacaoFinal = c (populacao, populacaoRestante)
   return (populacaoFinal)
@@ -69,8 +69,8 @@ geraCruzamento = function (entrada, lags, populacao, nS, Pc, Pm) {
   p = 1:nPOPULACAO
   
   novaPopulacao = list ()
-  novaPopulacao = lapply (p, function (x)
-                             cruzamentoBLX (entrada, lags, populacao, nS, Pc, Pm))
+  novaPopulacao = parLapply (cl, p, function (x)
+                                    cruzamentoBLX (entrada, lags, populacao, nS, Pc, Pm))
   
   return (novaPopulacao)
 }

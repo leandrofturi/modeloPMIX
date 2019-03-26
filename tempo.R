@@ -11,22 +11,24 @@ MAPEdiferencaMAX <<- 0.15
 #PARAMETROS FUNCAO OBJETIVO
 nSINTETICA <<- 10000
 probCRUZAMENTO <<- 0.5
-probMUTACAO <<- 0
+probMUTACAO <<- 0.005
 
 lagSIGNIFICATIVO <<- T
 lagANUAL <<- 1
 lagMENSAL <<- 1
 
-gerarPOWELL <<- T
+gerarPOWELL <<- F
 
 require ('parallel')
 cores = detectCores () - 2
 cores = max (1, cores)
-#cl = makeCluster (1)
-#clusterExport (cl, list ("geraIndividuo", "cruzamentoBLX", "torneio", "momentos", "avaliacao", "estouro",
-                         #"FNS", "dominanciaCompleta", "CDA", "distancia", "residuos",
-                        #"entrada", "correlograma", "correlogramaAnual", "lagAnualSignificativo", "lagMensalSignificativo", "serieSint",
-                         #"nPOPULACAO", "cicloMAX", "MAPEdiferencaMAX", "nSINTETICA", "probCRUZAMENTO", "probMUTACAO"))
+cl = makeCluster (1)
+clusterExport (cl, list ("geraPinicial", "powell", "tamanhoPasso", "iteracoesMAX", "EPS",
+                         "geraIndividuo", "avaliaIndividuo", "cruzamentoBLX", "torneio",
+                         "momentos", "avaliacao", "estouro",
+                         "FNS", "dominanciaCompleta", "CDA", "distancia",
+                         "entrada", "correlograma", "correlogramaAnual", "lagSIGNIFICATIVO", "lagANUAL", "lagMENSAL", "residuos", "serieSint",
+                         "nPOPULACAO", "cicloMAX", "MAPEdiferencaMAX", "nSINTETICA", "probCRUZAMENTO", "probMUTACAO"))
 
 NSGA = function (dados, lags) {
   inicio = format (Sys.time (), "%F %Hh%M")
@@ -59,7 +61,9 @@ NSGA = function (dados, lags) {
     populacaoTotal = CCO (populacaoTotal)
     populacao = populacaoTotal[1:nPOPULACAO]
   }
-  #stopCluster (cl)
+  
+  populacao = melhorIndividuo (populacao)
+  stopCluster (cl)
   diretorio = getwd ()
   
   estacao = substr (dados, start = 1, stop = (nchar (dados)-4))
