@@ -7,11 +7,12 @@ source ('PMIX.R')
 nPOPULACAO <<- 50
 cicloMAX <<- 1000
 MAPEdiferencaMAX <<- 0.15
+MAPEavaliacao <<- 0.2
 
 #PARAMETROS FUNCAO OBJETIVO
 nSINTETICA <<- 10000
-probCRUZAMENTO <<- 0.5
-probMUTACAO <<- 0.005
+probCRUZAMENTO <<- 0.8
+probMUTACAO <<- 0.05
 
 lagSIGNIFICATIVO <<- T
 lagANUAL <<- 1
@@ -52,7 +53,7 @@ NSGA = function (dados, lags) {
   populacao = CCO (populacao)
   ciclo <<- 0
   
-  while ((ciclo < cicloMAX) && (MAPEdiferenca (populacao) > MAPEdiferencaMAX)) {
+  while ((ciclo < cicloMAX) && (MAPEdiferenca (populacao) > MAPEdiferencaMAX) && (melhorIndividuo (populacao) > MAPEavaliacao)) {
     ciclo <<- ciclo + 1
     print (ciclo)
     
@@ -84,10 +85,6 @@ NSGA = function (dados, lags) {
   lapply (p, function (x)
              arquivosSeries (populacao[[x]], x))
   setwd (diretorio)
-  
-  sink ("saidasPMIX.txt")
-  print (saidasPMIX)
-  sink ()
 
   fim = format (Sys.time (), "%F %Hh%M")
 	

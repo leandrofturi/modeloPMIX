@@ -72,7 +72,7 @@ CCO = function (populacao) {
 }
 
 melhorIndividuo = function (populacao) {
-  pesos = c (3, 1, 3, 3, 1)
+  pesos = c (2, 1, 3, 3, 1)
   avaliacoes = matrix (0, ncol = length (populacao), nrow = 5)
   avaliacoes[1, ] = sapply (populacao, function (x) x$avaliacao$media)
   avaliacoes[2, ] = sapply (populacao, function (x) x$avaliacao$dp)
@@ -80,10 +80,11 @@ melhorIndividuo = function (populacao) {
   avaliacoes[4, ] = sapply (populacao, function (x) x$avaliacao$facMensal)
   avaliacoes[5, ] = sapply (populacao, function (x) x$avaliacao$somRes)
   
-  avaliacoes = avaliacoes*pesos
+  avaliacoes = (avaliacoes*pesos) / (sum (pesos))
   final = apply (avaliacoes, 2, sum)
-  diversidade = order (final)
+  individuo = sort (final)[1]
+  #diversidade = order (final)
+  #populacao = populacao[diversidade]
   
-  populacao = populacao[diversidade]
-  return  (populacao)
+  return  (individuo)
 }

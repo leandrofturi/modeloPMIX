@@ -6,6 +6,7 @@ graficoFACs = function (serieH, p, lag) {
   series = leituraArquivos (p)
   inicializaGrafico (serieH, lag)
   cores = rainbow (nPOPULACAO)
+  p = 1:length (p)
   lapply (p, function (x)
              graficoFAC (series[[x]], lag, cores[x]))
   graficoFAC (serieH, lag, 'black')
@@ -13,11 +14,11 @@ graficoFACs = function (serieH, p, lag) {
 
 leituraArquivos = function (p) {
   nomes = sapply (p, function (x)
-    paste0 ("serie_", x, ".csv"))
-  series = lapply (p, function (x)
-                   read.csv (nomes[x], header = TRUE, sep = ";", dec = ","))
-  series = lapply (p, function (x)
-    as.matrix (series[[x]][-1]))
+                     paste0 ("serie_", x, ".csv"))
+  series = lapply (nomes, function (x)
+                          read.csv (x, header = TRUE, sep = ";", dec = ","))
+  series = lapply (series, function (x)
+                           as.matrix (x[-1]))
   return (series)
 }
 
