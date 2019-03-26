@@ -18,7 +18,7 @@ lagSIGNIFICATIVO <<- T
 lagANUAL <<- 1
 lagMENSAL <<- 1
 
-gerarPOWELL <<- F
+gerarPOWELL <<- T
 
 require ('parallel')
 cores = detectCores () - 2
@@ -31,13 +31,32 @@ clusterExport (cl, list ("geraPinicial", "powell", "tamanhoPasso", "iteracoesMAX
                          "entrada", "correlograma", "correlogramaAnual", "lagSIGNIFICATIVO", "lagANUAL", "lagMENSAL", "residuos", "serieSint",
                          "nPOPULACAO", "cicloMAX", "MAPEdiferencaMAX", "nSINTETICA", "probCRUZAMENTO", "probMUTACAO"))
 
+TESTES = function (dados) {
+  lags = list ()
+  lags[[1]] = c (1,0,0,0)
+  lags[[2]] = c (1,0,1,0)
+  lags[[3]] = c (1,1,0,0)
+  lags[[4]] = c (1,1,1,0)
+  lags[[5]] = c (1,1,1,1)
+  lags[[6]] = c (2,0,0,0)
+  lags[[7]] = c (2,0,1,0)
+  lags[[8]] = c (2,1,0,0)
+  lags[[9]] = c (2,1,1,0)
+  lags[[10]] = c (2,1,1,1)
+  lags[[11]] = c (2,2,2,2)
+  lags[[12]] = c (3,2,2,1)
+  
+  lapply (lags, function (x)
+                NSGA (dados, x))
+}
+
 NSGA = function (dados, lags) {
   inicio = format (Sys.time (), "%F %Hh%M")
   entrada = entrada (dados)
   print ("Formando populacao inicial...")
   
   if (gerarPOWELL) {
-    saidasPMIX = PMIXs (dados, lags, 25)
+    saidasPMIX = PMIXs (dados, lags, 50)
     parametrosIniciais = sapply (saidasPMIX, function (x) x$parametros)
     parametrosIniciais = t (parametrosIniciais)
   }
