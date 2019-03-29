@@ -71,13 +71,13 @@ tamanhoPasso = function (serie, lags, ponto, passo) {
   return (final)
 }
 
-PMIXs = function (dados, lags, n) {
+PMIXs = function (dados, lags, n, ordem) {
   serie = entrada(dados)$serieHN
   print ("obtendo parametros pelo metodo de Powell")
   p = 1:n
   Pinicial = list ()
-  Pinicial = parLapply (cl, p, function (x)
-                               geraPinicial (lags))
+  Pinicial = Lapply (p, function (x)
+                        geraPinicial (lags))
   saidas = parLapply (cl, Pinicial, function (x)
                                     powell (serie, lags, x))
   
@@ -90,16 +90,25 @@ PMIXs = function (dados, lags, n) {
   arqPowell = data.frame (paramPowell)
   rownames (arqPowell) = p
   colnames (arqPowell) = c ("ciclos", "somRes", rep (c ("Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"), sum (lags)))
-  write.csv2 (arqPowell, "parametrosIniciais.csv")
+  write.csv2 (arqPowell, paste0 ("parametrosIniciais_", ordem, ".csv"))
   
   return (saidas)
 }
 
 geraPinicial = function (lags) {
-  phi = (runif (12*lags[1], 0.5, 1.5)) * (sapply ((round (runif (12*lags[1], -1, 0))), function (x) if (x == 0) x = 1 else x = -1))
-  tht = runif (12*lags[2], -0.5, 0.5)
-  PHI = (runif (12*lags[3], 0.5, 1.5)) * (sapply ((round (runif (12*lags[3], -1, 0))), function (x) if (x == 0) x = 1 else x = -1))
-  THT = runif (12*lags[4], -0.5, 0.5)
+  phi = numeric (0)
+  tht = numeric (0)
+  PHI = numeric (0)
+  THT = numeric (0)
+  if (lags[1] > 0)
+    phi = (runif (12*lags[1], 0.5, 1.5)) * (sapply ((round (runif (12*lags[1], -1, 0))), function (x) if (x == 0) x = 1 else x = -1))
+  if (lags[2] > 0)
+    tht = runif (12*lags[2], -0.5, 0.5)
+  if (lags[3] > 0)
+    PHI = (runif (12*lags[3], 0.5, 1.5)) * (sapply ((round (runif (12*lags[3], -1, 0))), function (x) if (x == 0) x = 1 else x = -1))
+  if (lags[4] > 0)
+    THT = runif (12*lags[4], -0.5, 0.5)
+  
   Pinicial = c (phi, tht, PHI, THT)
   
   return (Pinicial)

@@ -5,7 +5,7 @@ source ('PMIX.R')
 
 #PARAMETROS ALGORITMO GENETICO
 nPOPULACAO <<- 50
-cicloMAX <<- 1000
+cicloMAX <<- 1
 MAPEdiferencaMAX <<- 0.15
 MAPEavaliacao <<- 0.2
 
@@ -18,7 +18,7 @@ lagSIGNIFICATIVO <<- T
 lagANUAL <<- 1
 lagMENSAL <<- 1
 
-gerarPOWELL <<- T
+gerarPOWELL <<- F
 
 require ('parallel')
 cores = detectCores () - 2
@@ -32,7 +32,8 @@ clusterExport (cl, list ("geraPinicial", "powell", "tamanhoPasso", "iteracoesMAX
                          "nPOPULACAO", "cicloMAX", "MAPEdiferencaMAX", "nSINTETICA", "probCRUZAMENTO", "probMUTACAO"))
 
 TESTES = function (dados) {
-  lags = list ()
+  p = 1:12
+  lags = list ( )
   lags[[1]] = c (1,0,0,0)
   lags[[2]] = c (1,0,1,0)
   lags[[3]] = c (1,1,0,0)
@@ -46,44 +47,43 @@ TESTES = function (dados) {
   lags[[11]] = c (2,2,2,2)
   lags[[12]] = c (3,2,2,1)
   
-  lapply (lags, function (x)
-                NSGA (dados, x))
+  lapply (p, function (x)
+                NSGA (dados, lags[[x]], x))
+  stopCluster (cl)
 }
 
-NSGA = function (dados, lags) {
+NSGA = function (dados, lags, ordem) {
   inicio = format (Sys.time (), "%F %Hh%M")
   entrada = entrada (dados)
   print ("Formando populacao inicial...")
   
   if (gerarPOWELL) {
-    saidasPMIX = PMIXs (dados, lags, 50)
+    saidasPMIX = PMIXs (dados, lags, 50, ordem)
     parametrosIniciais = sapply (saidasPMIX, function (x) x$parametros)
     parametrosIniciais = t (parametrosIniciais)
   }
   
   else {
-    parametrosIniciais = read.csv ("parametrosIniciais.csv", header = TRUE, sep = ";", dec = ",")
+    parametrosIniciais = read.csv (paste0 ("parametrosIniciais_", ordem, ".csv"), header = TRUE, sep = ";", dec = ",")
     parametrosIniciais = parametrosIniciais[-(1:3)]
     parametrosIniciais = as.vector (as.matrix (parametrosIniciais))
     parametrosIniciais = matrix (parametrosIniciais, ncol = (sum (lags))*12)
   }
 
-  populacao = geraPopulacao (entrada, lags, nSINTETICA, parametrosIniciais)
+  populacao = geraPopulacao (entrada, lags, nSINTETICA, parametrosIniciais, nPOPULACAO)
   populacao = CCO (populacao)
   ciclo <<- 0
   
-  while ((ciclo < cicloMAX) && (MAPEdiferenca (populacao) > MAPEdiferencaMAX) && (melhorIndividuo (populacao) > MAPEavaliacao)) {
+  while ((ciclo < cicloMAX) && (MAPEdiferenca (populacao) > MAPEdiferencaMAX)) {
     ciclo <<- ciclo + 1
     print (ciclo)
     
-    novaPopulalacao = geraCruzamento (entrada, lags, populacao, nSINTETICA, probCRUZAMENTO, probMUTACAO)
-    populacaoTotal = c(populacao, novaPopulalacao)
+    novaPopulalacao = geraCruzamento (entrada, lags, populacao, nSINTETICA, probCRUZAMENTO, probMUTACAO, nPOPULACAO)
+    populacaoTotal = c (populacao, novaPopulalacao)
     populacaoTotal = CCO (populacaoTotal)
     populacao = populacaoTotal[1:nPOPULACAO]
   }
   
-  populacao = melhorIndividuo (populacao)
-  stopCluster (cl)
   diretorio = getwd ()
   
   estacao = substr (dados, start = 1, stop = (nchar (dados)-4))
@@ -127,9 +127,9 @@ MAPEdiferenca = function (populacao) {
     return (1)
 }
 
-arquivosSeries = function (individuo, p) {
+arquivosSeries = function (parte, p) {
   nome = paste0 ("series/serie_", p, ".csv")
-  serie = data.frame (individuo$serie)
+  serie = data.frame (parte$serie)
   rownames (serie) = c (1:nSINTETICA)
   colnames (serie) = c ("Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez")
   write.csv2 (serie, nome)
