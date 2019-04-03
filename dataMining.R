@@ -1,9 +1,11 @@
-agrupamento = function (entrada, lags, populacao, nS, nGrupos) { #nGrupos = cores
-  print ("Efetuando agrupamento...")
-  populacaoTotal = completaPopulacao (entrada, lags, populacao, nS, (nGrupos*length (populacao)))
-  distancias = lapply (populacaoTotal, function (x)
-                                       distEuclidiana (x, populacaoTotal))
-  grupos = KNN (populacaoTotal, distancias, length (populacao))
+agrupamento = function (entrada, lags, populacao, nGerada, nS, nGrupos) { #nGrupos = cores
+  distancias = lapply (populacao, function (x)
+                                  distEuclidiana (x, populacao))
+  posDist = order (sapply (distancias, sum))
+  centroides = populacao[posDist[1:nGrupos]]
+  
+  populacaoTotal = completaPopulacao (entrada, lags, populacao, nS, nGerada)
+  grupos = KNN (populacaoTotal, centroides)
   
   return (grupos)
 }
@@ -14,11 +16,12 @@ distEuclidiana = function (individuo, populacao) {
   return (dist)
 }
 
-KNN = function (populacao, distancias, k) {
-  proximos = lapply (distancias, function (x)
-                                 order (x)[1:k])
-  grupos = lapply (proximos, function (x)
-                             populacao[x])
-  return (grupos)
+KNN = function (populacao, centroides) {
+  distancias = lapply (centroides, function (x)
+                                  distEuclidiana (x, populacao))
+  posDist = lapply (distancias, order)
+  grupos = lapply (posDist, function (x) 
+                            populacao[1:nPOPULACAO])
   
+  return (grupos)
 }
