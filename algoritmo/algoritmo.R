@@ -1,30 +1,29 @@
-source ("entrada.R")
-source ('inicializaPop.R')
-source ('mecanismos.R')
-source ('PMIX.R')
-source ('tempo.R')
-source ('dataMining.R')
-source ('lexicografica.R')
-source ('graficoSeries.R')
-source ('graficoFAC_Anual.R')
-source ('graficoFAC_Mensal.R')
+source ("algoritmo/entrada.R")
+source ('algoritmo/inicializaPop.R')
+source ('algoritmo/mecanismos.R')
+source ('modelo/PMIX.R')
+source ('algoritmo/tempo.R')
+source ('algoritmo/dataMining.R')
+source ('algoritmo/lexicografica.R')
+source ('analise/graficoFAC_Anual.R')
+source ('analise/graficoFAC_Mensal.R')
+source ('analise/graficoSeries.R')
 
-#PARAMETROS ALGORITMO GENETICO
-nPOPULACAO <<- 30
+#PARAMETROS DO ALGORITMO GENETICO
+nPOPULACAO <<- 50
 cicloMAX <<- 10000
-MAPEdiferencaMAX <<- 0.15
-MAPEavaliacao <<- 0.2
+MAPEdiferencaMAX <<- 5 / 100
+MAPEavaliacao <<- 20 / 100
 
-#PARAMETROS FUNCAO OBJETIVO
 nSINTETICA <<- 10000
-probCRUZAMENTO <<- 0.8
-probMUTACAO <<- 0.05
+probCRUZAMENTO <<- 80 / 100
+probMUTACAO <<- 5 / 100
 
 lagSIGNIFICATIVO <<- T
 lagANUAL <<- 1
 lagMENSAL <<- 1
 
-gerarPOWELL <<- F
+gerarPOWELL <<- T
 
 #PARAMETROS AVALIACAO
 TOLERANCIAS <<- c (0.2, 0.1, 0.2, 0.05, 0.05)
@@ -56,8 +55,6 @@ COMPLETO = function (dados) {
   lags[[8]] = c (2,1,0,0)
   lags[[9]] = c (2,1,1,0)
   lags[[10]] = c (2,1,1,1)
-  lags[[11]] = c (2,2,2,2)
-  lags[[12]] = c (3,2,2,1)
   
   p = 1:length(lags)
   

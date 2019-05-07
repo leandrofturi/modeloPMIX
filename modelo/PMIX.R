@@ -1,10 +1,9 @@
-source ('entrada.R')
-source ('correlograma.R')
-source ('sumQuadRes.R')
+source ('algoritmo/entrada.R')
+source ('modelo/correlograma.R')
+source ('modelo/sumQuadRes.R')
 
 
 iteracoesMAX <<- 500
-#EPS <<- .Machine$double.eps^0.5
 EPS <<- 10^-5
 
 powell = function (serie, lags, P0) {
@@ -31,7 +30,6 @@ powell = function (serie, lags, P0) {
       }
     }
     
-    #CRITERIO DE PARADA
     if (E0 - Ei < EPS) {
       final = list (parametros = Pi, somRes = Ei, ciclos = ciclos)
       return (final)
@@ -73,24 +71,13 @@ tamanhoPasso = function (serie, lags, ponto, passo) {
 
 PMIXs = function (dados, lags, n, ordem) {
   serie = entrada(dados)$serieHN
-  print ("obtendo parametros pelo metodo de Powell")
+  
   p = 1:n
-  Pinicial = list ()
-  Pinicial = Lapply (p, function (x)
+  Pinicial = lapply (p, function (x)
                         geraPinicial (lags))
+  
   saidas = parLapply (cl, Pinicial, function (x)
                                     powell (serie, lags, x))
-  
-  parametros = sapply (saidas, function (x) x$parametros)
-  somRes = sapply (saidas, function (x) x$somRes)
-  ciclos = sapply (saidas, function (x) x$ciclos)
-  paramPowell = sapply (p, function (x) c (ciclos[x], somRes[x], parametros[, x]))
-  paramPowell = t (paramPowell)
-  
-  arqPowell = data.frame (paramPowell)
-  rownames (arqPowell) = p
-  colnames (arqPowell) = c ("ciclos", "somRes", rep (c ("Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"), sum (lags)))
-  write.csv2 (arqPowell, paste0 ("parametrosIniciais_", ordem, ".csv"))
   
   return (saidas)
 }
@@ -112,4 +99,33 @@ geraPinicial = function (lags) {
   Pinicial = c (phi, tht, PHI, THT)
   
   return (Pinicial)
+}
+
+PMIX = function (dados, lags) {
+  inicio = Sys.time ( )
+  
+  entrada = entrada(dados)
+  serie = entrada$serieHN
+  Pinicial = c (rep (1, 12*lags[1]), rep (0, 12*lags[2]), rep (1, 12*lags[3]), rep (0, 12*lags[4]))
+  
+  saida = powell (serie, lags, Pinicial)
+
+  paramPowell = c (saida$ciclos, saida$somRes, saida$parametros)
+  paramPowell = t (paramPowell)
+  
+  fim = Sys.time ( )
+  duracao = as.numeric (difftime (fim, inicio))
+  
+  dpRes = residuos (serie, saida$parametros, lags)$dpRes
+  serieS = serieSint (saida$parametros, dpRes, lags, (nSINTETICA + 50))
+  serieS = serieS[-(1:50), ]
+  serieS = t ((t (serieS) * entrada$dpHL) + entrada$mediaHL)
+  serieS = exp (serieS)
+  
+  arqPowell = data.frame (paramPowell)
+  colnames (arqPowell) = c ("ciclos", "somRes", rep (c ("Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"), sum (lags)))
+  rownames (arqPowell) = c ("1")
+  
+  final = list (arqSeries = serieS, arqAvaliacoes = arqPowell, duracao = duracao)
+  return (final)
 }

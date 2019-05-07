@@ -1,4 +1,4 @@
-source ('avaliacao.R')
+source ('algoritmo/avaliacao.R')
 
 geraIndividuo = function (entrada, lags, nS) {
   nINDIVIDUO = sum (lags) * 12
@@ -44,13 +44,13 @@ geraPopulacao = function (entrada, lags, nS, parametrosIniciais, nP) {
     populacao = populacao[lengths(populacao) != 0]
     
     if ((length (populacao)) < nP) {
-      print ("gerando crossover entre os individuos...")
+      #print ("gerando crossover entre os individuos...")
       n = nP - (length (populacao))
       populacao = completaPopulacao (entrada, lags, populacao, nS, n)
     }
   }
   
-  print ("populacao completa!")
+  #print ("populacao completa!")
   return (populacao)
 }
 

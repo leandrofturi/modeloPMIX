@@ -1,3 +1,5 @@
+lagSIGNIFICATIVO <<- TRUE
+
 correlograma = function(serie, lagMax, grafico) {
   
   mPer = apply(serie, 2, mean)

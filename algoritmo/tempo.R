@@ -1,16 +1,15 @@
-NSGA = function (dados, lags, ordem) {
-  inicio = format (Sys.time (), "%F %Hh%M")
+NSGA = function (dados, lags, dadosPowell) {
+  inicio = Sys.time ( )
+  
   entrada = entrada (dados)
-  print ("Formando populacao inicial...")
   
   if (gerarPOWELL) {
     saidasPMIX = PMIXs (dados, lags, nPOPULACAO, ordem)
     parametrosIniciais = sapply (saidasPMIX, function (x) x$parametros)
     parametrosIniciais = t (parametrosIniciais)
   }
-  
   else {
-    parametrosIniciais = read.csv (paste0 ("parametrosIniciais_", ordem, ".csv"), header = TRUE, sep = ";", dec = ",")
+    parametrosIniciais = read.csv (dadosPowell, header = TRUE, sep = ";", dec = ",")
     parametrosIniciais = parametrosIniciais[-(1:3)]
     parametrosIniciais = as.vector (as.matrix (parametrosIniciais))
     parametrosIniciais = matrix (parametrosIniciais, ncol = (sum (lags))*12)
@@ -18,11 +17,10 @@ NSGA = function (dados, lags, ordem) {
 
   populacao = geraPopulacao (entrada, lags, nSINTETICA, parametrosIniciais, nPOPULACAO)
   populacao = CCO (populacao)
-  ciclo <<- 0
+  ciclo = 0
   
   while ((ciclo < cicloMAX) && (MAPEdiferenca (populacao) > MAPEdiferencaMAX)) {
-    ciclo <<- ciclo + 1
-    print (ciclo)
+    ciclo = ciclo + 1
     
     novaPopulalacao = geraCruzamento (entrada, lags, populacao, nSINTETICA, probCRUZAMENTO, probMUTACAO, nPOPULACAO)
     populacaoTotal = c (populacao, novaPopulalacao)
@@ -31,42 +29,23 @@ NSGA = function (dados, lags, ordem) {
   }
   populacao = lexicografia (populacao, TOLERANCIAS, PESOS)
   
-  diretorio = getwd ()
-  
-  estacao = substr (dados, start = 1, stop = (nchar (dados)-4))
-  if (! (dir.exists (estacao)))
-    dir.create (file.path (estacao))
-  setwd (estacao)
-  data = format (Sys.time (), "%F %Hh%M")
-  ordem = paste0 ("PMIX(", lags[1], ",", lags[2], ",", lags[3], ",", lags[4], ") ", data)
-  if (! (dir.exists (ordem)))
-    dir.create (file.path (ordem))
-  setwd (ordem)
-  if (! (dir.exists ("series")))
-    dir.create (file.path ("series"))
-  
-  fim = format (Sys.time (), "%F %Hh%M")
-  inicio = paste ("inicio:", inicio)
-  fim = paste ("fim:", fim)
-  
-  sink ("tempoExecucao.txt")
-  print (inicio)
-  print (fim)
-  print (paste ("ciclos:", ciclo))
-  sink ( )
-  
-  arquivoParametros (populacao, lags)
-  arquivoAvaliacoes (populacao)
+  fim = Sys.time ( )
+  duracao = as.numeric (difftime (fim, inicio))
+
+  arqParametros = arquivoParametros (populacao, lags)
+  arqAvaliacoes = arquivoAvaliacoes (populacao)
   p = 1:nPOPULACAO
-  lapply (p, function (x)
-             arquivosSeries (populacao[[x]], x))
-  setwd (diretorio)
+  arqSeries = lapply (p, function (x)
+                         arquivosSeries (populacao[[x]], x))
+  
+  final = list (arqParametros = arqParametros, arqAvaliacoes = arqAvaliacoes, arqSeries = arqSeries, duracao = duracao)
+  return (final)
 }
 
 NSGAagrupado = function (dados, lags, ordem, nGrupos) {
   inicio = format (Sys.time (), "%F %Hh%M")
   entrada = entrada (dados)
-  print ("Formando populacao inicial...")
+  #print ("Formando populacao inicial...")
   
   if (gerarPOWELL) {
     saidasPMIX = PMIXs (dados, lags, nPOPULACAO, ordem)
@@ -83,9 +62,9 @@ NSGAagrupado = function (dados, lags, ordem, nGrupos) {
   
   populacao = geraPopulacao (entrada, lags, nSINTETICA, parametrosIniciais, nPOPULACAO)
   nGerada = (nGrupos-1)*nPOPULACAO
-  print ("Efetuando agrupamento...")
+  #print ("Efetuando agrupamento...")
   grupos = agrupamento (entrada, lags, populacao, nGerada, nSINTETICA, nGrupos)
-  print ("Agrupamento completo!")
+  #print ("Agrupamento completo!")
   
   rodadas = 0
   while ((rodadas <= 100) && (MAPEdiferenca (populacao) > MAPEdiferencaMAX)) {
@@ -93,7 +72,7 @@ NSGAagrupado = function (dados, lags, ordem, nGrupos) {
     print (rodadas)
     
     resultadosPorGrupo = lapply (grupos, function (x)
-                                         GA (entrada, lags, x))
+                                         AG (entrada, lags, x))
     populacao = list ( )
     for (c in (1:nGrupos))
       populacao = c (populacao, resultadosPorGrupo[[c]])
@@ -142,11 +121,11 @@ NSGAagrupado = function (dados, lags, ordem, nGrupos) {
   setwd (diretorio)
 }
 
-GA = function (entrada, lags, populacao) {
-  ciclo <<- 0
+AG = function (entrada, lags, populacao) {
+  ciclo = 0
   
   while ((ciclo < (round (cicloMAX/10))) && (MAPEdiferenca (populacao) > MAPEdiferencaMAX)) {
-    ciclo <<- ciclo + 1
+    ciclo = ciclo + 1
     
     novaPopulalacao = geraCruzamento (entrada, lags, populacao, nSINTETICA, probCRUZAMENTO, probMUTACAO, nPOPULACAO)
     populacaoTotal = c (populacao, novaPopulalacao)
@@ -172,20 +151,18 @@ MAPEdiferenca = function (populacao) {
 }
 
 arquivosSeries = function (parte, p) {
-  nome = paste0 ("series/serie_", p, ".csv")
   serie = data.frame (parte$serie)
   rownames (serie) = c (1:nSINTETICA)
   colnames (serie) = c ("Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez")
-  write.csv2 (serie, nome)
+  return (serie)
 }
 
 arquivoParametros = function (populacao, lags) {
-  parametros = t (sapply (populacao, function (x)
-                                     x$individuo))
+  parametros = t (sapply (populacao, function (x) x$individuo))
   parametros = data.frame (parametros)
   rownames (parametros) = c (1:length (populacao))
   colnames (parametros) = rep (c ("Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"), sum (lags))
-  write.csv2 (parametros, "parametros.csv")
+  return (parametros)
 }
 
 arquivoAvaliacoes = function (populacao) {
@@ -195,5 +172,5 @@ arquivoAvaliacoes = function (populacao) {
   avaliacoes = data.frame (avaliacoes)
   rownames (avaliacoes) = c (1:length (populacao))
   colnames (avaliacoes) = c("MAPEmedia", "MAPEdp", "MAPEfacAnual", "MAPEfacMensal", "SomRes")
-  write.csv2 (avaliacoes, "avaliacoes.csv")
+  return (avaliacoes)
 }

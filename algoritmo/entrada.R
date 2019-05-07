@@ -1,4 +1,4 @@
-source ('correlograma.R')
+source ('modelo/correlograma.R')
 
 entrada = function (dados) {
   leitura = read.table (dados, header = T, sep = ";", dec = ",")
