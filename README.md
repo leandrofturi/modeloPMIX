@@ -7,6 +7,5 @@ Algoritmos de otimização são utilizados em diversas áreas do conhecimento, c
 
   - Método de Powell;
   - Algoritmo Evolucionário Multiobjetivo baseado na técnica _fast Nondominated Sorting Genetic Algorithm_ (NSGA-II), em conjunto com o Método de Powell;
-  - Agrupamento dos parâmetros através de um classificador _K-Nearest Neighbors_ (KNN), em conjunto com o NSGA-II.
 
 > Para utilização, é necessária a obtenção da série sintética a ser analisada e um mínimo domínio da linguagem R.
