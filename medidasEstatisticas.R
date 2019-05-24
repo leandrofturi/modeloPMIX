@@ -1,11 +1,12 @@
 Hurst = function (serie) {
-  serie = as.vector (t (serie))
-  
   n = length (serie)
   media = mean (serie)
-  serieNormalizada = (serie - media)^2
+  serieNormalizada = serie - media
+  
+  somaAcumulada = sapply (1:n, function (x)
+                               sum (serieNormalizada[1:x]))
 
-  R = max (serieNormalizada) - min (serieNormalizada)
+  R = max (somaAcumulada) - min (somaAcumulada)
   S =  sd (serie)
   Hurst = log (R/S) / (log((n)/2))
   
