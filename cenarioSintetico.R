@@ -100,3 +100,18 @@ serieSintetica = function (parametros, dpRes, lags, n) {
   serieS = serieS[-(1:50), ]
   return (serieS)
 }
+
+# CENARIO SINTETICO DESNORMALIZADO E DESPADRONIZADO
+cenarioSintetico = function (serieH, parametros, lags, n) {
+  serieHL = log (serieH)
+  mediaHL = apply (serieHL, 2, mean)
+  dpHL = apply (serieHL, 2, sd)
+  serieHN = t ((t (serieHL) - mediaHL) / dpHL)
+  
+  dpRes = residuos (serieHN, parametros, lags)$dpRes
+  serieS = serieSintetica (parametros, dpRes, lags, n)
+  serieS = t ((t (serieS) * dpHL) + mediaHL)
+  serieS = exp (serieS)
+  
+  return (serieS)
+}
