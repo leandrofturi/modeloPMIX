@@ -7,7 +7,8 @@ source ('mecanismos.R')
 # nP: Tamanho da populacao
 # Pc: Probabilidade de cruzamento
 # Pm: Probabilidade de mutacao
-NSGA = function (dados, lags, nP, Pc, Pm, cicloMAX, MAXDiferenca) {
+NSGA = function (lags, nP, Pc, Pm, cicloMAX, MAXDiferenca) {
+  dados = choose.files ( )
   inicio = format (Sys.time (), "%F %Hh%M")
   
   entrada = entrada (dados)

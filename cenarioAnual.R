@@ -1,8 +1,36 @@
 # MODELAGEM ANUAL
-#
+
+n = 10000
+
+# FUNCAO GENERICA PARA O CENARIO SINTETICO ANUAL
+cenarioSinteticoAnual = function (P, Q) {
+  lags = c (P, Q)
+  # O ARQUIVO E ESCOLHIDO DENTRO DO PROGRAMA
+  dados = choose.files ( )
+  leitura = read.table (dados, header = TRUE, sep = ";", dec = ",")
+  leitura = leitura[, -1]
+  serieH = matrix (leitura, ncol = 12, byrow = TRUE)
+  serieAnualH = apply (serieH, 1, sum)
+  serieHL = log (serieAnualH)
+  mediaHL = mean (serieHL)
+  dpHL = sd (serieHL)
+  serieHN = (serieHL - mediaHL) / dpHL
+  
+  modelo = ARMA (serieHN, lags)
+  parametros = modelo$parametros
+  dpRes = modelo$dpRes
+  c = modelo$constante
+  
+  serieS = serieSinteticaAnual (parametros, dpRes, c, lags, n)
+  serieS = (serieS * dpHL) + mediaHL
+  serieS = exp (serieS)
+  
+  final = list (serieSintetica = serieS, parametros = parametros)
+  return (final)
+}
+
 # serieAnual: Vetor contendo a serie padronizada e normalizada anual.
 # lags: Ordem do modelo ARMA (p, q)
-
 ARMA = function (serieAnual, lags) {
   # METODO DA MINIMIZACAO DA SOMA DOS QUADRADOS DOS RESIDUOS
   modelo = arima0 (ts (serieAnual), order = c (lags[1], 0, lags[2]), seasonal = list (order = c (0, 0, 0), period = NA),
@@ -56,27 +84,6 @@ serieSinteticaAnual = function (parametros, dpRes, c, lags, nS) {
     }
     serieS[v] = auto + mm + residuoS[v]
   }
-  
-  return (serieS)
-}
-
-# FUNCAO GENERICA PARA O CENARIO SINTETICO ANUAL
-#
-# serieAnualH: Serie historica medida
-cenarioSinteticoAnual = function (serieAnualH, lags, n) {
-  serieHL = log (serieAnualH)
-  mediaHL = mean (serieHL)
-  dpHL = sd (serieHL)
-  serieHN = (serieHL - mediaHL) / dpHL
-  
-  modelo = ARMA (serieHN, lags)
-  parametros = modelo$parametros
-  dpRes = modelo$dpRes
-  c = modelo$constante
-
-  serieS = serieSinteticaAnual (parametros, dpRes, c, lags, n)
-  serieS = (serieS * dpHL) + mediaHL
-  serieS = exp (serieS)
   
   return (serieS)
 }

@@ -3,7 +3,10 @@ source ('correlograma.R')
 source ('sumQuadRes.R')
 
 # CALCULO DOS PARAMETROS DO MODELO PELO METODO DE POWELL
-PMIX = function (serie, lags) {
+PMIX = function (p, q, P, Q) {
+  lags = c (p, q, P, Q)
+  dados = choose.files ( )
+  serie = entrada (dados)$serieHN
   # PONTO INICIAL: 1 NOS AUTORREGRESSIVOS, 0 NOS MEDIAS MOVEIS
   P0 = c (rep (1, 12*lags[1]), rep (0, 12*lags[2]), rep (1, 12*lags[3]), rep (0, 12*lags[4]))
   parametros = powell (serie, lags, P0)
