@@ -11,7 +11,6 @@ NSGA = function (dados, lags, nP, Pc, Pm, cicloMAX, MAXDiferenca) {
   
   while ((ciclo < cicloMAX) && (MAPEdiferenca (populacao) > MAXDiferenca)) {
     ciclo = ciclo + 1
-    print (ciclo)
     novaPopulalacao = geraCruzamento (entrada, lags, populacao, Pc, Pm, nP)
     populacaoTotal = c (populacao, novaPopulalacao)
     populacaoTotal = CCO (populacaoTotal)
@@ -22,6 +21,13 @@ NSGA = function (dados, lags, nP, Pc, Pm, cicloMAX, MAXDiferenca) {
   arquivosSeries = arquivosSeries (populacao)
   arquivoParametros = arquivoParametros (populacao, lags)
   arquivoAvaliacoes = arquivoAvaliacoes (populacao)
+  
+  final = list (ciclos = ciclo,
+                arquivoParametrosIniciais = arquivoParametrosIniciais,
+                arquivosSeries = arquivosSeries,
+                arquivoParametros = arquivoParametros,
+                arquivoAvaliacoes = arquivoAvaliacoes)
+  return (final)
 }
 
 MAPEdiferenca = function (populacao) {
