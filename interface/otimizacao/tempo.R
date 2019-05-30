@@ -1,17 +1,17 @@
-NSGA = function (dados, lags, nP, Pc, Pm, cicloMAX, MAXDiferenca) {
+NSGA = function (dados, lags, nP, Pc, Pm, cicloMAX, MAXDiferenca, nS) {
   entrada = entrada (dados)
   
   saidasPMIX = PMIXs (entrada$serieHN, lags, nP)
   parametrosIniciais = sapply (saidasPMIX, function (x) x$parametros)
   parametrosIniciais = t (parametrosIniciais)
 
-  populacao = geraPopulacao (entrada, lags, parametrosIniciais, nP)
+  populacao = geraPopulacao (entrada, lags, parametrosIniciais, nP, nS)
   populacao = CCO (populacao)
   ciclo = 0
   
   while ((ciclo < cicloMAX) && (MAPEdiferenca (populacao) > MAXDiferenca)) {
     ciclo = ciclo + 1
-    novaPopulalacao = geraCruzamento (entrada, lags, populacao, Pc, Pm, nP)
+    novaPopulalacao = geraCruzamento (entrada, lags, populacao, Pc, Pm, nP, nS)
     populacaoTotal = c (populacao, novaPopulalacao)
     populacaoTotal = CCO (populacaoTotal)
     populacao = populacaoTotal[1:nP]

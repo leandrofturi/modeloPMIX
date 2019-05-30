@@ -1,3 +1,6 @@
+library (shiny)
+library (DT)
+
 source ('analise/graficoFAC_Anual.R')
 source ('analise/graficoFAC_Mensal.R')
 source ('analise/graficoSerieHistorica.R')
@@ -9,6 +12,7 @@ source ('modelo/correlograma.R')
 source ('modelo/entrada.R')
 source ('modelo/medidasEstatisticas.R')
 source ('modelo/powell.R')
+
 source ('modelo/sumQuadRes.R')
 source ('modelo/volumeUtil.R')
 
@@ -26,6 +30,7 @@ algoritmo = function (input) {
     inicio = Sys.time ( )
     arquivos = PMIX (dados, lags)
     fim = Sys.time ( )
+    
     parametrosIniciais = c (rep (1, 12*lags[1]), rep (0, 12*lags[2]), rep (1, 12*lags[3]), rep (0, 12*lags[4]))
     parametros = arquivos$parametros
     series = cenarioSintetico (serieH, arquivos$parametros, lags, input$nsint)
@@ -36,8 +41,9 @@ algoritmo = function (input) {
     inicio = Sys.time ( )
     arquivos = NSGA (dados, lags,
                      input$nPop, ((input$pC) / 100), ((input$pM) / 100),
-                     input$cicloMax, ((input$MAPEdiferencaMAX)/100))
+                     input$cicloMax, ((input$MAPEdiferencaMAX)/100), input$nsint)
     fim = Sys.time ( )
+    
     parametrosIniciais = arquivos$arquivoParametrosIniciais
     parametros = arquivos$arquivoParametros
     series = arquivos$arquivosSeries
@@ -45,7 +51,7 @@ algoritmo = function (input) {
     algoritmo = list (ciclos = arquivos$ciclos)
   }
   
-  final = list (arqParametrosIniciais = parametrosIniciais,
+  final <<- list (arqParametrosIniciais = parametrosIniciais,
                 arqParametros = parametros,
                 arqSeries = series,
                 arqAvaliacoes = avaliacoes,
