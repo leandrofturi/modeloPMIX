@@ -51,7 +51,7 @@ algoritmo = function (input) {
     algoritmo = list (ciclos = arquivos$ciclos)
   }
   
-  final <<- list (arqParametrosIniciais = parametrosIniciais,
+  final = list (arqParametrosIniciais = parametrosIniciais,
                 arqParametros = parametros,
                 arqSeries = series,
                 arqAvaliacoes = avaliacoes,

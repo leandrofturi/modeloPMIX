@@ -20,9 +20,12 @@ navbarPage ("PMIX (p,q,P,Q)",
                                        dataTableOutput("tabelaMensalHist")
                             )
                   ),
-                  
                   tabPanel ("Algoritmo",
                             fluidRow (
+                              column (width = 2,
+                                      actionButton ("iniciar", "Iniciar!"),
+                                      verbatimTextOutput("resultadoGeral")
+                              ),
                               column (width = 1,
                                       numericInput ("p", label = "p", value = 1, min = 0, max = 12),
                                       numericInput ("q", label = "q", value = 0, min = 0, max = 12),
@@ -63,20 +66,41 @@ navbarPage ("PMIX (p,q,P,Q)",
                               )
                             )
                   ),
-                  tabPanel ("Resultados",
-                            sidebarPanel (
-                              actionButton ("iniciar", "Iniciar!"),
-                              verbatimTextOutput("resultadoGeral"),
-                              tags$hr ( ),
-                              selectInput ("nSerie", "Serie a ser analisada:", choices = 1:50, selected = 50),
-                              tags$hr ( ),
-                              downloadButton ("downloadSerie", "Download", icon ("save"))
-                            ),
+                  tabPanel ("Analise de dados",
+                            selectInput ("analise", label = "Local de analise", 
+                                         choices = list ("Estimados" = 1, "Arquivados" = 2),
+                                         selected = "Estimados"),
+                            pageWithSidebar (
+                              headerPanel (NULL),
+                              sidebarPanel (
+                                conditionalPanel (condition ="input.analise == 1",
+                                                  selectInput ("nSerie", "Serie a ser analisada:", choices = 1:50, selected = 50),
+                                                  tags$hr ( ),
+                                                  downloadButton ("downloadSerie", "Download", icon ("save"))
+                                                  ),
+                                conditionalPanel (condition = "input.analise == 2",
+                                                  fileInput ("serieArquivada", "Series a serem analisadas",
+                                                             multiple = TRUE,
+                                                             accept = c ("text/csv",
+                                                                         "text/comma-separated-values,text/plain",
+                                                                         ".csv")),
+                                                  tags$hr ( ),
+                                                  checkboxInput ("headerA", "Header", TRUE),
+                                                  selectInput ("sepA", label = "Separador de colunas", 
+                                                               choices = list ("Ponto" = '.', "Virgula" = ",", "Ponto e virgula" = ";", "Tabulacao" = "\t"), 
+                                                               selected = ";"),
+                                                  selectInput ("decA", label = "Separador decimal", 
+                                                               choices = list ("Ponto" = '.', "Virgula" = ","), 
+                                                               selected = ','),
+                                                  tags$hr ( ),
+                                                  selectInput ("nSerieA", "Serie a ser analisada:", choices = 1:50, selected = 50)
+                                                  )
+                                ),
+                              
                             mainPanel (
                               tabsetPanel (
                                 tabPanel("Tabela avaliacoes",
-                                         dataTableOutput("tabelaAvaliacao"),
-                                         verbatimTextOutput("observacoes")
+                                         dataTableOutput ("tabelaAvaliacao")
                                 ),
                                 tabPanel("Graficos series",
                                          plotOutput("GraficoSerie"),
@@ -93,5 +117,7 @@ navbarPage ("PMIX (p,q,P,Q)",
                                 )
                               )
                             )
+                        )    
                   )
+
 )
