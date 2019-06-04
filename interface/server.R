@@ -1,5 +1,24 @@
 function (input, output, session) {
   
+  output$parametros = renderPrint ({
+    if (input$tipo == 1) {
+      print ("Metodo de Powell")
+      print (c (input$p, input$q, input$P, input$Q))
+    }
+    else {
+      print ("Algoritmo Genetico")
+      print (c (input$p, input$q, input$P, input$Q))
+      print (paste ("Tamanho da Serie Sintetica:", input$nsint))
+      print ("Parametros Geneticos:")
+      print (paste ("Tamanho da Populacao:", input$nPop))
+      print (paste ("Probabilidade de Cruzamento:", input$pC))
+      print (paste ("Probabilidade de Mutacao:", input$pM))
+      print ("Criterios de Parada:")
+      print (paste ("Ciclo Maximo:", input$cicloMax))
+      print (paste ("MAPE da Diferenca maxima entre os individuos:", input$MAPEdiferencaMAX))
+    }
+  })
+  
   serieHist = reactive ({
     serieH = read.csv2 (input$file$datapath,
                         header = input$header,
@@ -19,9 +38,10 @@ function (input, output, session) {
   })
   
   serieEscolhida = reactive ({
+    input$nSerie
     if (input$analise == 1) {
       serieS = funcaoAlgoritmo ( )$arqSeries
-      if (input$tipo != 1)
+      if (input$tipo == 2)
         serieS = serieS[[as.numeric (input$nSerie)]]
     }
     else
@@ -78,7 +98,7 @@ function (input, output, session) {
   })
   
   output$tabelaMedias <- renderDataTable ({
-    if ((input$iniciar) || (input$analise == 2)) {
+    if ((input$iniciar) || ((input$analise == 2) && (length (input$serieArquivada$datapath) > 0))) {
       MediaHist = apply (serieHist ( ), 2, mean)
       MediaSint = apply (serieEscolhida ( ), 2, mean)
       DesvioHist = apply (serieHist ( ), 2, sd)
@@ -107,7 +127,7 @@ function (input, output, session) {
     }
   })
   
-  output$tabelaAvaliacao <- renderDataTable ({
+  output$tabelaAvaliacao = renderDataTable ({
     if (input$iniciar) {
       if (input$tipo == 1) {
         parametros = funcaoAlgoritmo ( )$arqParametros
@@ -144,16 +164,17 @@ function (input, output, session) {
         parametrosPowell = data.frame (t (phi), t (tht), t (PHI), t (THT))
         colnames (parametrosPowell) = c (rep ("phi", max (1, input$p)), rep ("tht", max (1, input$q)), rep ("PHI", max (1, input$P)), rep ("THT", max (1, input$Q)))
         rownames (parametrosPowell) = c ("Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez")
-        datatable (parametrosPowell)
+        return (datatable (parametrosPowell))
       }
       else {
         avaliacoes = data.frame (funcaoAlgoritmo ( )$arqAvaliacoes)
         colnames (avaliacoes) = c ("MAPE media", "MAPE desvio", "MAPE FAC anual", "MAPE FAC mensal", "Soma Residual")
         rownames (avaliacoes) = paste ("Serie", 1:input$nPop)
-        datatable (avaliacoes)
+        return (datatable (avaliacoes))
       }
     }
-    if (input$analise == 2) {
+    
+    if ((input$analise == 2) && (length (input$serieArquivada$datapath) > 0)) {
       mediaH = apply (serieHist ( ), 2, mean)
       dpH = apply (serieHist ( ), 2, sd)
       facAnualH = autocorrelacaoAnual (serieHist ( ), 12)[-1]
@@ -164,27 +185,29 @@ function (input, output, session) {
       MAPEFacAnual = NULL
       MAPEFacMensal = NULL
       
-      lapply (leituraSerie ( ), function (x) {
+      avaliacoes = lapply (leituraSerie ( ), function (x) {
         mediaS = apply (x, 2, mean)
         dpS = apply (x, 2, sd)
         facAnualS = autocorrelacaoAnual (x, 12)[-1]
         facMensalS = autocorrelacaoMensal (x, 12)[-1, ]
         
-        MAPEMedia = c (MAPEMedia, sum (abs ((mediaH - mediaS) / mediaH)) / 12)
-        MAPEDesvio = c (MAPEDesvio, sum (abs ((dpH - dpS)) / dpH) / 12)
-        MAPEFacAnual = c (MAPEFacAnual, sum (abs ((facAnualH - facAnualS) / facAnualH)) / 12)
-        MAPEFacMensal = c (MAPEFacMensal, sum (abs ((facMensalH - facMensalS) / facMensalH)) / (12*12))
+        MAPEMedia = sum (abs ((mediaH - mediaS) / mediaH)) / 12
+        MAPEDesvio = sum (abs ((dpH - dpS)) / dpH) / 12
+        MAPEFacAnual = sum (abs ((facAnualH - facAnualS) / facAnualH)) / 12
+        MAPEFacMensal = sum (abs ((facMensalH - facMensalS) / facMensalH)) / (12*12)
+        c (MAPEMedia, MAPEDesvio, MAPEFacAnual, MAPEFacMensal)
       })
       
-      avaliacoes = data.frame (MAPEMedia, MAPEDesvio, MAPEFacAnual, MAPEFacMensal)
-      #colnames (avaliacoes) = c ("MAPE media", "MAPE desvio", "MAPE FAC anual", "MAPE FAC mensal")
-      #rownames (avaliacoes) = paste ("Serie", 1:length (input$serieArquivada$datapath))
-      datatable (avaliacoes)
+      avaliacoes = matrix (unlist (avaliacoes), ncol = 4, byrow = T)
+      avaliacoes = data.frame (avaliacoes)
+      colnames (avaliacoes) = c ("MAPE media", "MAPE desvio", "MAPE FAC anual", "MAPE FAC mensal")
+      rownames (avaliacoes) = paste ("Serie", 1:length (input$serieArquivada$datapath))
+      return (datatable (avaliacoes))
     }
   })
   
   output$GraficoSerie <- renderPlot ({
-    if ((input$iniciar) || (input$analise == 2)) {
+    if ((input$iniciar) || ((input$analise == 2) && (length (input$serieArquivada$datapath) > 0))) {
       inicializaGraficoSERIE (serieHist ( ))
       graficoSERIE (serieHist ( ), 'cornflowerblue')
       graficoSERIE (serieEscolhida ( ), 'blue')
@@ -192,7 +215,7 @@ function (input, output, session) {
   })
   
   output$FACAnuais <- renderPlot ({
-    if ((input$iniciar) || (input$analise == 2)) {
+    if ((input$iniciar) || ((input$analise == 2) && (length (input$serieArquivada$datapath) > 0))) {
       inicializaGraficoFACANUAL (serieHistAnual ( ), 12)
       graficoFACANUAL (serieHistAnual ( ), 12, 'cornflowerblue')
       graficoFACANUAL (serieEscolhidaAnual ( ), 12, 'blue')
@@ -200,7 +223,7 @@ function (input, output, session) {
   })
   
   output$tabelaAnual <- renderDataTable ({
-    if ((input$iniciar) || (input$analise == 2)) {
+    if ((input$iniciar) || ((input$analise == 2) && (length (input$serieArquivada$datapath) > 0))) {
       facAnual = data.frame (as.vector (autocorrelacaoAnual (serieEscolhidaAnual ( ), 12)[-1]))
       rownames (facAnual) = paste ("lag", 1:12)
       datatable (facAnual, colnames = NULL)
@@ -208,7 +231,7 @@ function (input, output, session) {
   })
   
   output$FACMensais <- renderPlot ({
-    if ((input$iniciar) || (input$analise == 2)) {
+    if ((input$iniciar) || ((input$analise == 2) && (length (input$serieArquivada$datapath) > 0))) {
       inicializaGraficoMENSAL (serieHist ( ), as.numeric (input$lagMensalMAX))
       graficoFACMENSAL (serieHist ( ), as.numeric (input$lagMensalMAX), 'cornflowerblue')
       graficoFACMENSAL (serieEscolhida ( ), as.numeric (input$lagMensalMAX), 'blue')
@@ -216,7 +239,7 @@ function (input, output, session) {
   })
   
   output$tabelaMensal <- renderDataTable ({
-    if ((input$iniciar) || (input$analise == 2)) {
+    if ((input$iniciar) || ((input$analise == 2) && (length (input$serieArquivada$datapath) > 0))) {
       facMensal = data.frame (autocorrelacaoMensal (serieEscolhida ( ), 12)[-1, ])
       colnames (facMensal) = c ("Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez")
       rownames (facMensal) = paste ("lag", 1:12)

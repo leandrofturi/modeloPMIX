@@ -21,52 +21,65 @@ navbarPage ("PMIX (p,q,P,Q)",
                             )
                   ),
                   tabPanel ("Algoritmo",
-                            fluidRow (
-                              column (width = 2,
-                                      actionButton ("iniciar", "Iniciar!"),
-                                      verbatimTextOutput("resultadoGeral")
+                            sidebarLayout(
+                              sidebarPanel (
+                                radioButtons ("tipo", label = "Estimacao de parametros",
+                                              choices = list ("Metodo de Powell" = 1,
+                                                              "Algoritmo Genetico" = 2), 
+                                              selected = 1),
+                                tags$hr ( ),
+                                verbatimTextOutput ("parametros")
                               ),
-                              column (width = 1,
-                                      numericInput ("p", label = "p", value = 1, min = 0, max = 12),
-                                      numericInput ("q", label = "q", value = 0, min = 0, max = 12),
-                                      numericInput ("P", label = "P", value = 0, min = 0, max = 12),
-                                      numericInput ("Q", label = "Q", value = 0, min = 0, max = 12)
-                              ),
-                              column (width = 4,
-                                      radioButtons ("tipo", label = "Estimacao de parametros",
-                                                    choices = list ("Metodo de Powell" = 1,
-                                                                    "Algoritmo Genetico" = 2), 
-                                                    selected = 1)
-                              ),
-                              column (width = 2,
-                                      checkboxInput ("lagSignificativo", "Lag Significativo", TRUE),
-                                      numericInput ("lagAnual", label = "lag Anual", value = 1, min = 1, max = 12),
-                                      numericInput ("lagMensal", label = "lag Mensal", value = 1, min = 1, max = 12)
+                              mainPanel(
+                                fluidRow (
+                                  column (width = 2,
+                                          numericInput ("p", label = "p", value = 1, min = 0, max = 12, width = "70px")
+                                  ),
+                                  column (width = 2,
+                                          numericInput ("q", label = "q", value = 0, min = 0, max = 12, width = "70px")
+                                  ),
+                                  column (width = 2,
+                                          numericInput ("P", label = "P", value = 0, min = 0, max = 12, width = "70px")
+                                  ),
+                                  column (width = 2,
+                                          numericInput ("Q", label = "Q", value = 0, min = 0, max = 12, width = "70px")
+                                  )
+                                ),
+                                tags$hr ( ),
+                                fluidRow (
+                                  column (width = 8,
+                                          sliderInput ("nsint", label = "Tamanho da serie sintetica", min = 0, max = 50000, value = 10000, width = "90%")
+                                  ),
+                                  column (width = 4,
+                                          checkboxInput ("volume", "Gerar Volume", TRUE),
+                                          checkboxInput ("hurst", "Gerar Hurst", TRUE)
+                                  )
+                                )
                               )
                             ),
                             tags$hr ( ),
                             fluidRow (
                               column (width = 4,
-                                      sliderInput ("nPop", label = "Tamanho da populacao", min = 10, max = 100, value = 50),
-                                      sliderInput ("cicloMax", label = "Ciclo Maximo", min = 0, max = 50000, value = 10000),
-                                      sliderInput ("nsint", label = "Tamanho da serie sintetica", min = 0, max = 50000, value = 10000),
-                                      numericInput ("pC", label = "Probabilidade de cruzamento", value = 80, min = 0, max = 100),
-                                      numericInput ("pM", label = "Probabilidade de mutacao", value = 5, min = 0, max = 100)
+                                      sliderInput ("nPop", label = "Tamanho da populacao", min = 10, max = 100, value = 50, width = "100%"),
+                                      sliderInput ("cicloMax", label = "Ciclo Maximo", min = 0, max = 50000, value = 10000, width = "100%")
                               ),
-                              column (width = 4,
-                                      numericInput ("MAPEdiferencaMAX", label = "MAPEdiferencaMAX", value = 5, min = 0, max = 100),
-                                      numericInput ("MAPEavaliacao", label = "MAPEavaliacao", value = 20, min = 0, max = 100)
-                              )
-                            ),
-                            tags$hr ( ),
-                            fluidRow (
-                              column (width = 4,
-                                      checkboxInput ("volume", "Gerar Volume", TRUE),
-                                      checkboxInput ("hurst", "Gerar Hurst", TRUE)
+                              column (width = 2,
+                                      numericInput ("pC", label = "Probabilidade de cruzamento", value = 80, min = 0, max = 100, width = "80%"),
+                                      numericInput ("pM", label = "Probabilidade de mutacao", value = 5, min = 0, max = 100, width = "80%")
+                              ), 
+                              column (width = 2,
+                                      numericInput ("MAPEdiferencaMAX", label = "MAPEdiferencaMAX", value = 5, min = 0, max = 100, width = "80%"),
+                                      numericInput ("MAPEavaliacao", label = "MAPEavaliacao", value = 20, min = 0, max = 100, width = "80%")
+                              ),
+                              column (width = 2,
+                                      numericInput ("lagAnual", label = "lag Anual", value = 1, min = 1, max = 12, width = "70px"),
+                                      numericInput ("lagMensal", label = "lag Mensal", value = 1, min = 1, max = 12, width = "70px"),
+                                      checkboxInput ("lagSignificativo", "Lag Significativo", TRUE)
                               )
                             )
+                            
                   ),
-                  tabPanel ("Analise de dados",
+                  tabPanel ("Resultados",
                             selectInput ("analise", label = "Local de analise", 
                                          choices = list ("Estimados" = 1, "Arquivados" = 2),
                                          selected = "Estimados"),
@@ -74,6 +87,9 @@ navbarPage ("PMIX (p,q,P,Q)",
                               headerPanel (NULL),
                               sidebarPanel (
                                 conditionalPanel (condition ="input.analise == 1",
+                                                  verbatimTextOutput ("resultadoGeral"),
+                                                  actionButton ("iniciar", "Iniciar!"),
+                                                  tags$hr ( ),
                                                   selectInput ("nSerie", "Serie a ser analisada:", choices = 1:50, selected = 50),
                                                   tags$hr ( ),
                                                   downloadButton ("downloadSerie", "Download", icon ("save"))
