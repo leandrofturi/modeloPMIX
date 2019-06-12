@@ -8,7 +8,8 @@ source ('mecanismos.R')
 # Pc: Probabilidade de cruzamento
 # Pm: Probabilidade de mutacao
 NSGA = function (lags, nP, Pc, Pm, cicloMAX, MAXDiferenca) {
-  dados = choose.files ( )
+  if (AUTO == F)
+    dados = choose.files ( )
   inicio = format (Sys.time (), "%F %Hh%M")
   
   entrada = entrada (dados)
@@ -33,6 +34,8 @@ NSGA = function (lags, nP, Pc, Pm, cicloMAX, MAXDiferenca) {
     populacao = populacaoTotal[1:nP]
   }
   
+  fim = format (Sys.time (), "%F %Hh%M")
+  
   # ESCRITA DOS ARQUIVOS
   diretorio = getwd ( )
   
@@ -48,7 +51,6 @@ NSGA = function (lags, nP, Pc, Pm, cicloMAX, MAXDiferenca) {
   if (! (dir.exists ("Series")))
     dir.create (file.path ("Series"))
   
-  fim = format (Sys.time (), "%F %Hh%M")
   inicio = paste ("INICIO:", inicio)
   fim = paste ("FIM:", fim)
   

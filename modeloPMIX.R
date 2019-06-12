@@ -6,6 +6,7 @@ ProbCruzamento = 0.8
 ProbMutacao = 0.05
 MAXCiclos = 10000
 MAXDiferenca = 0.2
+AUTO <<- F
 
 require ('parallel')
 # DEFINICAO DA QUANTIDADE DE NOS
@@ -29,10 +30,12 @@ modeloPMIX = function (dados) {
   lags[[9]] = c (2,1,1,0)
   #lags[[10]] = c (2,1,1,1)
   
+  AUTO <<- T
+  dados <<- choose.files ( )
+  
   lapply (lags, function (x) {
     print("Iniciando novo NSGA...")
-    print (x)
-    NSGA (dados, x, nPopulacao, ProbCruzamento, ProbMutacao, MAXCiclos, MAXDiferenca)
+    NSGA (x, nPopulacao, ProbCruzamento, ProbMutacao, MAXCiclos, MAXDiferenca)
     })
   # PARAR O CLUSTER
   stopCluster (cl)

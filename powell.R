@@ -3,14 +3,71 @@ source ('correlograma.R')
 source ('sumQuadRes.R')
 
 # CALCULO DOS PARAMETROS DO MODELO PELO METODO DE POWELL
-PMIX = function (p, q, P, Q) {
-  lags = c (p, q, P, Q)
-  dados = choose.files ( )
+PMIX = function (dados, lags) {
+#PMIX = function (p, q, P, Q) {
+  #lags = c (p, q, P, Q)
+  #dados = choose.files ( )
   serie = entrada (dados)$serieHN
+  
+  inicio = format (Sys.time (), "%F %Hh%M")
   # PONTO INICIAL: 1 NOS AUTORREGRESSIVOS, 0 NOS MEDIAS MOVEIS
   P0 = c (rep (1, 12*lags[1]), rep (0, 12*lags[2]), rep (1, 12*lags[3]), rep (0, 12*lags[4]))
-  parametros = powell (serie, lags, P0)
-  return (parametros)
+  saidaPowell = powell (serie, lags, P0)
+  fim = format (Sys.time (), "%F %Hh%M")
+  
+  # ESCRITA DOS ARQUIVOS
+  diretorio = getwd ( )
+  
+  estacao = substr (dados, start = 1, stop = (nchar (dados)-4))
+  if (! (dir.exists (estacao)))
+    dir.create (file.path (estacao))
+  setwd (estacao)
+  data = format (Sys.time (), "%F %Hh%M")
+  ordem = paste0 ("PMIX(", lags[1], ",", lags[2], ",", lags[3], ",", lags[4], ") ", data)
+  
+  parametros = saidaPowell$parametros
+  phi = matrix (0, ncol = 12)
+  tht = matrix (0, ncol = 12)
+  PHI = matrix (0, ncol = 12)
+  THT = matrix (0, ncol = 12)
+  
+  limInf = 0
+  limSup = 0
+  
+  if (lags[1] > 0) {
+    limInf = 1
+    limSup = 12*lags[1]
+    phi = matrix(parametros[limInf : limSup], ncol = 12, byrow = T)
+  }
+  if (lags[2] > 0) {
+    limInf = limSup + 1
+    limSup = limInf + 12*lags[2] - 1
+    tht = matrix(parametros[limInf : limSup], ncol = 12, byrow = T)
+  }
+  if (lags[3] > 0) {
+    limInf = limSup + 1
+    limSup = limInf + 12*lags[3] - 1
+    PHI = matrix(parametros[limInf : limSup], ncol = 12, byrow = T)
+  }
+  if (lags[4] > 0) {
+    limInf = limSup + 1
+    limSup = limInf + 12*lags[4] - 1
+    THT = matrix(parametros[limInf : limSup], ncol = 12, byrow = T)
+  }
+  
+  parametrosPowell = data.frame (t (phi), t (tht), t (PHI), t (THT))
+  colnames (parametrosPowell) = c (rep ("phi", max (1, lags[1])), rep ("tht", max (1, lags[2])), rep ("PHI", max (1, lags[3])), rep ("THT", max (1, lags[4])))
+  rownames (parametrosPowell) = c ("Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez")
+  write.csv2 (parametrosPowell, paste0 (ordem, ".csv"))
+  
+  sink (paste0 ("Execucao", ordem, ".txt"))
+  print (inicio)
+  print (fim)
+  print (paste ("CICLOS:", saidaPowell$ciclos))
+  print (paste ("SOMA RESIDUAL:", saidaPowell$somRes))
+  sink ( )
+  
+  setwd (diretorio)
 }
 
 # METODO DE POWELL

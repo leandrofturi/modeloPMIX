@@ -58,6 +58,7 @@ arquivosSeries = function (populacao) {
   series = lapply (p, function (x) {
                       serie = data.frame (populacao[[x]]$serie)
                       colnames (serie) = c ("Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez")
+                      return (serie)
   })
   return (series)
 }

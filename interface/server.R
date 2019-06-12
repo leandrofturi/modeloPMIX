@@ -38,11 +38,12 @@ function (input, output, session) {
   })
   
   serieEscolhida = reactive ({
-    input$nSerie
     if (input$analise == 1) {
       serieS = funcaoAlgoritmo ( )$arqSeries
-      if (input$tipo == 2)
+      if (input$tipo == 2) {
         serieS = serieS[[as.numeric (input$nSerie)]]
+        print(serieS)
+      }
     }
     else
       serieS = leituraSerie ( ) [[as.numeric (input$nSerieA)]]
