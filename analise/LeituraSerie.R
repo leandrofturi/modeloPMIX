@@ -1,3 +1,22 @@
+source ("entrada.R")
+source ("correlograma.R")
+
+facH = function ( ) {
+  fileSerieH = file.choose ( )
+  serieH = entrada (fileSerieH)$serieH
+  escreveFacMensal (serieH, "FACMensalHistorica.csv")
+  escreveFacAnual (serieH, "FACAnualHistorica.csv")
+}
+
+facS = function ( ) {
+  fileSerieS = file.choose ( )
+  serie = read.csv2 (fileSerieS, header = T, sep = ";", dec = ",")
+  serie = serie[, -1]
+  serie = as.matrix (serie)
+  escreveFacMensal (serie, "FACMensalSintetica.csv")
+  escreveFacAnual (serie, "FACAnualSintetica.csv")
+}
+
 leitura = function (fileSeries) {
   series = lapply (fileSeries, function (x)
                                read.csv2 (x, header = T, sep = ";", dec = ","))
@@ -7,15 +26,18 @@ leitura = function (fileSeries) {
   return (series)
 }
 
-tabelaCorrelogramaMensal = function (serieH, serieS) {
-  facH = autocorrelacaoMensal (serieH, 12)
-  facS = autocorrelacaoMensal (serieS, 12)
-  
-  fac = matrix (0, ncol = 24, nrow = 12)
-  i = 1
-  for (m in (1:12)) {
-    fac[, i] = facH[, m]
-    fac[, i+1] = facS[, m]
-    i = i + 1
-  }
+escreveFacMensal = function (serie, nomeArq) {
+  fac = autocorrelacaoMensal (serie, 12)
+  arquivo = data.frame (fac)
+  colnames (arquivo) = c ("Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez")
+  rownames (arquivo) = paste0 ("lag", (0:12))
+  write.csv2 (arquivo, nomeArq)
+}
+
+escreveFacAnual = function (serie, nomeArq) {
+  serieAnual = apply (serie, 1, sum)
+  fac = autocorrelacaoAnual (serieAnual, 12)
+  arquivo = data.frame (fac)
+  rownames (arquivo) = paste0 ("lag", (0:12))
+  write.csv2 (arquivo, nomeArq)
 }
