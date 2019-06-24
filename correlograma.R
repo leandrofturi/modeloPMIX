@@ -8,7 +8,7 @@ autocorrelacaoMensal = function (serie, lagMax) {
   
   if (lagMax > n) {
     print ("Lag maior que a serie!")
-    return ( );
+    return (NULL);
   }
   
   mPer = apply (serie, 2, mean)

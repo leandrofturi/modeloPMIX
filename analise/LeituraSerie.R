@@ -1,15 +1,25 @@
 source ("entrada.R")
 source ("correlograma.R")
 
+sistema = Sys.info ( )['sysname']
+if (sistema == "Linux")
+  require ('tcltk')
+
 facH = function ( ) {
-  fileSerieH = file.choose ( )
+  if (sistema == "Linux")
+    fileSerieH = tk_choose.files ( )
+  if (sistema == "Windows")
+    fileSerieH = file.choose ( )
   serieH = entrada (fileSerieH)$serieH
   escreveFacMensal (serieH, "FACMensalHistorica.csv")
   escreveFacAnual (serieH, "FACAnualHistorica.csv")
 }
 
 facS = function ( ) {
-  fileSerieS = file.choose ( )
+  if (sistema == "Linux")
+    fileSerieS = tk_choose.files ( )
+  if (sistema == "Windows")
+    fileSerieS = file.choose ( )
   serie = read.csv2 (fileSerieS, header = T, sep = ";", dec = ",")
   serie = serie[, -1]
   serie = as.matrix (serie)

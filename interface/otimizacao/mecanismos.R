@@ -3,7 +3,7 @@ FNS = function (populacao) {
                                     unlist (dominanciaCompleta (x, populacao)))
   
   np = unlist (lapply (npIndividual, sum))
-  np = np - 1
+  np = np-1
   
   return (np)
 }
@@ -11,17 +11,17 @@ FNS = function (populacao) {
 dominanciaCompleta = function (termo, populacao) {
   lapply (populacao, function (x)
                      if (
-			 ((termo$avaliacao$media >= x$avaliacao$media) && (termo$avaliacao$dp >= x$avaliacao$dp) &&
+			                   ((termo$avaliacao$media >= x$avaliacao$media) && (termo$avaliacao$dp >= x$avaliacao$dp) &&
                           (termo$avaliacao$facAnual >= x$avaliacao$facAnual) && (termo$avaliacao$facMensal >= x$avaliacao$facMensal)) ||
                          ((termo$avaliacao$media >= x$avaliacao$media) && (termo$avaliacao$dp >= x$avaliacao$dp) &&
                           (termo$avaliacao$facAnual >= x$avaliacao$facAnual) && (termo$avaliacao$somRes >= x$avaliacao$somRes)) ||
                          ((termo$avaliacao$media >= x$avaliacao$media) && (termo$avaliacao$dp >= x$avaliacao$dp) && (termo$avaliacao$facMensal >= x$avaliacao$facMensal) &&
                           (termo$avaliacao$somRes >= x$avaliacao$somRes)) ||
                          ((termo$avaliacao$media >= x$avaliacao$media) && (termo$avaliacao$facAnual >= x$avaliacao$facAnual) &&
-			  (termo$avaliacao$facMensal >= x$avaliacao$facMensal) && (termo$avaliacao$somRes >= x$avaliacao$somRes)) ||
+			                    (termo$avaliacao$facMensal >= x$avaliacao$facMensal) && (termo$avaliacao$somRes >= x$avaliacao$somRes)) ||
                          ((termo$avaliacao$dp >= x$avaliacao$dp) && (termo$avaliacao$facAnual >= x$avaliacao$facAnual) &&
-			  (termo$avaliacao$facMensal >= x$avaliacao$facMensal) && (termo$avaliacao$somRes >= x$avaliacao$somRes))
-			)
+			                    (termo$avaliacao$facMensal >= x$avaliacao$facMensal) && (termo$avaliacao$somRes >= x$avaliacao$somRes))
+		                	)
                      return (1)
     
                      else

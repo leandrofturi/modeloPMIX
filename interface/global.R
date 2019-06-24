@@ -57,5 +57,6 @@ algoritmo = function (input) {
                 arqAvaliacoes = avaliacoes,
                 duracao = difftime (fim, inicio, units = c ("secs")),
                 algoritmo = algoritmo)
+  
   return (final)
 }

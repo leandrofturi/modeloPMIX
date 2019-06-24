@@ -27,7 +27,7 @@ serieSintetica = function (parametros, dpRes, lags, n) {
     THT = matrix (parametros[limInf : limSup], ncol = 12, byrow = T)
   }
   
-  n = n + 50
+  n = n+50
   residuoS = matrix (rnorm (12*n), ncol = 12, nrow = n)
   residuoS = t ((t (residuoS) - (apply (residuoS, 2, mean))) / (apply (residuoS, 2, sd)))
   residuoS = t (t (residuoS) * dpRes)

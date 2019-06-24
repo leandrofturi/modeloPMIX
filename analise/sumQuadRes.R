@@ -1,7 +1,7 @@
 # CALCULO DO SOMATORIO DOS RESIDUOS
 #
 # serie: Matriz contendo a serie historica
-# parametros: Vetor contendo parametros phi, tht, PHI, THT. Parametros de ordem zero devem ser omitidos.
+# parametros: Vetor contendo parametros phi, tht, PHI, THT. Parametros de ordem zero sao omitidos.
 # dpRes: Vetor contendo o desvio=padrao dos residuos de cada mes.
 # lags: Vetor contendo as ordens dos parametros do modelo.
 

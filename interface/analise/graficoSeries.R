@@ -2,7 +2,7 @@ inicializaGraficoSERIE = function (serieH) {
   media = apply (serieH, 2, mean)
   desvio = apply (serieH, 2, sd)
   par (lwd = 1, col= 'black')
-  plot (NA, main = "Medias e Desvios", xlim = c (1,12), ylim = c (0, 1.2*(max (media + desvio))),
+  plot (NA, main = "Medias e Desvios", xlim = c (1,12), ylim = c (0, 1.2 * (max (media + desvio))),
         xlab = "", ylab = "Vazoes medias mensais (m^3/s)", axes = F, type = "n")
   axis (1, 1:12, c ("Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"))
   box ( )

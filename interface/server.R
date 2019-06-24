@@ -1,5 +1,4 @@
 function (input, output, session) {
-  
   output$parametros = renderPrint ({
     if (input$tipo == 1) {
       print ("Metodo de Powell")
@@ -67,7 +66,7 @@ function (input, output, session) {
     return (serieS)
   })
   
-  output$resultadoGeral <- renderPrint ({
+  output$resultadoGeral = renderPrint ({
     if (input$iniciar == 0)
       return ("Aguardando inicio...")
     
@@ -90,7 +89,7 @@ function (input, output, session) {
     }
   })
   
-  output$dados <- renderPlot ({
+  output$dados = renderPlot ({
     req (input$file)
     if (is.null (input$file))
       return (NULL)
@@ -98,7 +97,7 @@ function (input, output, session) {
     plotSerie (serieHist ( ))
   })
   
-  output$tabelaMedias <- renderDataTable ({
+  output$tabelaMedias = renderDataTable ({
     if ((input$iniciar) || ((input$analise == 2) && (length (input$serieArquivada$datapath) > 0))) {
       MediaHist = apply (serieHist ( ), 2, mean)
       MediaSint = apply (serieEscolhida ( ), 2, mean)
@@ -111,7 +110,21 @@ function (input, output, session) {
     }
   })
   
-  output$tabelaAnualHist <- renderDataTable ({
+  output$volumeUtilHist = renderPrint ({
+    if  (! (is.null (input$file))) {
+      print ("Volume util")
+      print (paste (volumeUtil (serieHist ( ), (input$Pregularizacao/100), TRUE), "m^3"))
+    }
+  })
+  
+  output$hurstHist = renderPrint ({
+    if  (! (is.null (input$file))) {
+      print ("Coeficiente de Hurst")
+      print (isolate (Hurst (as.vector (serieHist ( )))))
+    }
+  })
+  
+  output$tabelaAnualHist = renderDataTable ({
     if (! (is.null (input$file))) {
       facAnual = data.frame (as.vector (autocorrelacaoAnual (serieHistAnual ( ), 12)[-1]))
       rownames (facAnual) = paste ("lag", 1:12)
@@ -119,7 +132,7 @@ function (input, output, session) {
     }
   })
   
-  output$tabelaMensalHist <- renderDataTable ({
+  output$tabelaMensalHist = renderDataTable ({
     if  (! (is.null (input$file))) {
       facMensal = data.frame (autocorrelacaoMensal (serieHist ( ), 12)[-1, ])
       colnames (facMensal) = c ("Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez")
@@ -129,7 +142,8 @@ function (input, output, session) {
   })
   
   output$tabelaAvaliacao = renderDataTable ({
-    if (input$iniciar) {
+    input$analise
+    if ((input$iniciar) && (input$analise == 1)) {
       if (input$tipo == 1) {
         parametros = funcaoAlgoritmo ( )$arqParametros
         
@@ -175,7 +189,7 @@ function (input, output, session) {
       }
     }
     
-    if ((input$analise == 2) && (length (input$serieArquivada$datapath) > 0)) {
+    else if ((input$analise == 2) && (length (input$serieArquivada$datapath) > 0)) {
       mediaH = apply (serieHist ( ), 2, mean)
       dpH = apply (serieHist ( ), 2, sd)
       facAnualH = autocorrelacaoAnual (serieHist ( ), 12)[-1]
@@ -207,7 +221,7 @@ function (input, output, session) {
     }
   })
   
-  output$GraficoSerie <- renderPlot ({
+  output$GraficoSerie = renderPlot ({
     if ((input$iniciar) || ((input$analise == 2) && (length (input$serieArquivada$datapath) > 0))) {
       inicializaGraficoSERIE (serieHist ( ))
       graficoSERIE (serieHist ( ), 'cornflowerblue')
@@ -215,7 +229,7 @@ function (input, output, session) {
     }
   })
   
-  output$FACAnuais <- renderPlot ({
+  output$FACAnuais = renderPlot ({
     if ((input$iniciar) || ((input$analise == 2) && (length (input$serieArquivada$datapath) > 0))) {
       inicializaGraficoFACANUAL (serieHistAnual ( ), 12)
       graficoFACANUAL (serieHistAnual ( ), 12, 'cornflowerblue')
@@ -223,7 +237,7 @@ function (input, output, session) {
     }
   })
   
-  output$tabelaAnual <- renderDataTable ({
+  output$tabelaAnual = renderDataTable ({
     if ((input$iniciar) || ((input$analise == 2) && (length (input$serieArquivada$datapath) > 0))) {
       facAnual = data.frame (as.vector (autocorrelacaoAnual (serieEscolhidaAnual ( ), 12)[-1]))
       rownames (facAnual) = paste ("lag", 1:12)
@@ -231,7 +245,7 @@ function (input, output, session) {
     }
   })
   
-  output$FACMensais <- renderPlot ({
+  output$FACMensais = renderPlot ({
     if ((input$iniciar) || ((input$analise == 2) && (length (input$serieArquivada$datapath) > 0))) {
       inicializaGraficoMENSAL (serieHist ( ), as.numeric (input$lagMensalMAX))
       graficoFACMENSAL (serieHist ( ), as.numeric (input$lagMensalMAX), 'cornflowerblue')
@@ -239,12 +253,34 @@ function (input, output, session) {
     }
   })
   
-  output$tabelaMensal <- renderDataTable ({
+  output$tabelaMensal = renderDataTable ({
     if ((input$iniciar) || ((input$analise == 2) && (length (input$serieArquivada$datapath) > 0))) {
       facMensal = data.frame (autocorrelacaoMensal (serieEscolhida ( ), 12)[-1, ])
       colnames (facMensal) = c ("Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez")
       rownames (facMensal) = paste ("lag", 1:12)
       datatable (facMensal)
+    }
+  })
+  
+  output$volumeUtil = renderPrint ({
+    if  (! (is.null (input$file))) {
+      print ("Serie historica")
+      print (paste (volumeUtil (serieHist ( ), (input$Pregularizacao/100), TRUE), "m^3"))
+    }
+    if ((input$iniciar) || ((input$analise == 2) && (length (input$serieArquivada$datapath) > 0))) {
+      print ("Serie sintetica")
+      print (paste (volumeUtil (serieEscolhida ( ), (input$Pregularizacao/100), TRUE), "m^3"))
+    }
+  })
+  
+  output$hurst = renderPrint ({
+    if  (! (is.null (input$file))) {
+      print ("Serie historica")
+      print (isolate (Hurst (as.vector (serieHist ( )))))
+    }
+    if ((input$iniciar) || ((input$analise == 2) && (length (input$serieArquivada$datapath) > 0))) {
+      print ("Serie sintetica")
+      print ((Hurst (as.vector (serieEscolhida ( )))))
     }
   })
   
@@ -269,7 +305,7 @@ function (input, output, session) {
       )
   })
   
-  output$downloadSerie <- downloadHandler (
+  output$downloadSerie = downloadHandler (
     filename = function ( ) {
       paste0 ("serie_", input$nSerie, ".csv")
     },

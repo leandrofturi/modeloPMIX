@@ -6,7 +6,11 @@ n = 10000
 cenarioSinteticoAnual = function (P, Q) {
   lags = c (P, Q)
   # O ARQUIVO E ESCOLHIDO DENTRO DO PROGRAMA
-  dados = choose.files ( )
+  if (sistema == "Linux")
+    dados = tk_choose.files ( )
+  else if (sistema == "Windows")
+    dados = choose.files ( )
+  
   leitura = read.table (dados, header = TRUE, sep = ";", dec = ",")
   leitura = leitura[, -1]
   serieH = matrix (leitura, ncol = 12, byrow = TRUE)
@@ -25,7 +29,7 @@ cenarioSinteticoAnual = function (P, Q) {
   serieS = (serieS * dpHL) + mediaHL
   serieS = exp (serieS)
   
-  final = list (serieSintetica = serieS, parametros = parametros)
+  final = list (serieSintetica = serieS, residuos = modelo$residuos, parametros = parametros)
   return (final)
 }
 
@@ -40,8 +44,9 @@ ARMA = function (serieAnual, lags) {
   constante = parametros[length(parametros)]
   parametros = parametros[-length(parametros)]
   dpRes = sqrt (modelo$sigma2)
+  residuos = modelo$residuals
   
-  final = list (parametros = parametros, dpRes = dpRes, constante = constante)
+  final = list (residuos = residuos, parametros = parametros, dpRes = dpRes, constante = constante)
   return (final)
 }
 
@@ -82,45 +87,8 @@ serieSinteticaAnual = function (parametros, dpRes, c, lags, nS) {
       for (j in (1:q))
         mm = mm + tht[j]*residuoS[v-j]
     }
-    serieS[v] = auto + mm + residuoS[v]
+    serieS[v] = c + auto + mm + residuoS[v]
   }
   
   return (serieS)
-}
-
-# CALCULO DO SOMATORIO DOS QUADRADOS DOS RESIDUOS ANUAIS
-residuosAnuais = function (serieAnual, parametros, lags) {
-  p = lags[1]
-  q = lags[2]
-  
-  limInf = 0
-  limSup = 0
-  if (p > 0) {
-    limInf = 1
-    limSup = p
-    phi = parametros[limInf : limSup]
-  }
-  if (q > 0) {
-    limInf = limSup + 1
-    limSup = limInf + q - 1
-    tht = parametros[limInf : limSup]
-  }
-  
-  n = length (serieAnual)
-  residuo = rep (0, n)
-  for (v in ((max (p, q) + 1):n)) {
-    auto = 0
-    mm = 0
-    if (p > 0) {
-      for (i in (1:p))
-        auto = auto + phi[i]*serieAnual[v-i]
-    }
-    if (q > 0) {
-      for (j in (1:q))
-        mm = mm + tht[j]*residuo[v-j]
-    }
-    residuo[v] = serieAnual[v] - auto + mm
-  }
-  
-  return (residuo)
 }

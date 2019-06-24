@@ -3,10 +3,13 @@ source ('correlograma.R')
 source ('sumQuadRes.R')
 
 # CALCULO DOS PARAMETROS DO MODELO PELO METODO DE POWELL
-PMIX = function (dados, lags) {
-#PMIX = function (p, q, P, Q) {
-  #lags = c (p, q, P, Q)
-  #dados = choose.files ( )
+PMIX = function (p, q, P, Q) {
+  lags = c (p, q, P, Q)
+  if (sistema == "Linux")
+    dados = tk_choose.files ( )
+  else if (sistema == "Windows")
+    dados = choose.files ( )
+  
   serie = entrada (dados)$serieHN
   
   inicio = format (Sys.time (), "%F %Hh%M")

@@ -1,7 +1,7 @@
 # GERACAO DE CENARIOS SINTETICOS
 #
 # parametros: Vetor contendo parametros phi, tht, PHI, THT. Parametros de ordem zero devem ser omitidos.
-# dpRes: Vetor contendo o desvio=padrao dos residuos de cada mes.
+# dpRes: Vetor contendo o desviopadrao dos residuos de cada mes.
 # lags: Vetor contendo as ordens dos parametros do modelo.
 # n: Tamanho da serie a ser gerada.
 

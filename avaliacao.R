@@ -5,7 +5,7 @@ source ('sumQuadRes.R')
 # FUNCOES DE AVALIACAO PARA O ALGORITMO GENETICO
 #
 # entrada: Saida da funcao entrada
-# parametros: Vetor contendo parametros phi, tht, PHI, THT. Parametros de ordem zero devem ser omitidos.
+# parametros: Vetor contendo parametros phi, tht, PHI, THT. Parametros de ordem zero sao omitidos.
 # lags: Vetor contendo as ordens dos parametros do modelo.
 # nS: Tamanho da serie sintetica
 

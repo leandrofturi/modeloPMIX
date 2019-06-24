@@ -1,5 +1,7 @@
 source ('tempo.R')
 
+sistema = Sys.info ( )['sysname']
+
 nSINTETICA <<- 10000
 nPopulacao = 50
 ProbCruzamento = 0.8
@@ -9,6 +11,9 @@ MAXDiferenca = 0.2
 AUTO <<- F
 
 require ('parallel')
+if (sistema == "Linux") {
+  require ('tcltk')
+}
 # DEFINICAO DA QUANTIDADE DE NOS
 cores = 1
 cl = makeCluster (cores)

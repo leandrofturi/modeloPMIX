@@ -5,7 +5,7 @@ source ('correlograma.R')
 # dados: Caminho do arquivo contendo a serie a ser transformada em matriz
 
 entrada = function (dados) {
-  # ARQUIVO CONTENDO DUAS COLUNAS: UMA COM A DATA DA MEDICAO E A OUTRA COM AS MEDICOES DE VAZAO MENSAIS
+  # ARQUIVO CONTENDO DUAS COLUNAS: UMA COM A DATA DA MEDICAO E OUTRA COM AS MEDICOES DE VAZAO MENSAIS
   leitura = read.table (dados, header = TRUE, sep = ";", dec = ",")
   leitura = leitura[, -1]
   serieH = matrix (leitura, ncol = 12, byrow = TRUE)

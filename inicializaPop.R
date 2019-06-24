@@ -2,7 +2,7 @@ source ('avaliacao.R')
 
 # INICIALIZACAO DA POPULACAO E GERACAO DE INDIVIDUOS
 # entrada: Saida da funcao entrada
-# nSINTETICA: <Variavel global> Tamanho da serie sintetica
+# nSINTETICA: Variavel global com o tamanho da serie sintetica
 
 # GERACAO DE UM INIDIVIDUO ALEATORIAMENTE
 geraIndividuo = function (entrada, lags) {

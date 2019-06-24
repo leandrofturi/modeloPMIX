@@ -4,11 +4,11 @@ inicializaGraficoMENSAL = function (serieH, lag) {
   axis (1, 1:12, c ("Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"))
   axis (2, -1:1, c (-1, 0, 1))
   par (lty = 1)
-  lines (1:12, rep(0, 12))
+  lines (1:12, rep (0, 12))
   intConfianca = 1.96 / sqrt (length (serieH) / 12)
   par (lty = 2)
-  lines (1:12, rep(intConfianca, 12))
-  lines (1:12, rep(-intConfianca, 12))
+  lines (1:12, rep (intConfianca, 12))
+  lines (1:12, rep (-intConfianca, 12))
   box ( )
 }
 

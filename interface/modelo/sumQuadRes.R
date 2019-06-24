@@ -29,7 +29,7 @@ residuos = function (serie, parametros, lags) {
   
   residuo = numeric (length (serie))
   serieAux = as.vector (t (serie))
-  for(t in ((12 * (max (P, Q) + 1)) : (length (serie)))) {
+  for(t in ((12*(max (P, Q) + 1)):(length (serie)))) {
     mes = t %% 12
     if(mes == 0) mes = 12
     

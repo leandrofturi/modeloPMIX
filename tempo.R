@@ -8,8 +8,12 @@ source ('mecanismos.R')
 # Pc: Probabilidade de cruzamento
 # Pm: Probabilidade de mutacao
 NSGA = function (lags, nP, Pc, Pm, cicloMAX, MAXDiferenca) {
-  if (AUTO == F)
-    dados = choose.files ( )
+  if (AUTO == F) {
+    if (sistema == "Linux")
+      dados = tk_choose.files ( )
+    else if (sistema == "Windows")
+      dados = choose.files ( )
+  }
   inicio = format (Sys.time (), "%F %Hh%M")
   
   entrada = entrada (dados)

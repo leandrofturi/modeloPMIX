@@ -16,7 +16,13 @@ navbarPage ("PMIX (p,q,P,Q)",
                                            selected = ',')
                             ),
                             mainPanel (plotOutput ("dados"),
+                                       hr ( ),
+                                       verbatimTextOutput ("volumeUtilHist"),
+                                       hr ( ),
+                                       verbatimTextOutput ("hurstHist"),
+                                       hr ( ),
                                        dataTableOutput("tabelaAnualHist"),
+                                       hr ( ),
                                        dataTableOutput("tabelaMensalHist")
                             )
                   ),
@@ -116,20 +122,39 @@ navbarPage ("PMIX (p,q,P,Q)",
                             mainPanel (
                               tabsetPanel (
                                 tabPanel("Tabela avaliacoes",
+                                         br ( ),
                                          dataTableOutput ("tabelaAvaliacao")
                                 ),
                                 tabPanel("Graficos series",
+                                         br ( ),
                                          plotOutput("GraficoSerie"),
                                          dataTableOutput("tabelaMedias")
                                 ),
                                 tabPanel("Graficos FAC anuais",
+                                         br ( ),
                                          plotOutput("FACAnuais"),
                                          dataTableOutput("tabelaAnual")
                                 ),
                                 tabPanel("Graficos FAC mensais",
+                                         br ( ),
                                          selectInput ("lagMensalMAX", "lag mensal analisado:", choices = 1:12, selected = 1),
                                          plotOutput ("FACMensais"),
                                          dataTableOutput ("tabelaMensal")
+                                ),
+                                tabPanel("Medidas",
+                                         br ( ),
+                                         p (strong ("Calculo do volume util")),
+                                         fluidRow (
+                                           column (width = 6,
+                                                   sliderInput ("Pregularizacao", "Porcentagem de regularizacao", min = 0, max = 100, value = 50, width = "100%")
+                                           ),
+                                           column (width = 6,
+                                                   verbatimTextOutput ("volumeUtil")
+                                           )
+                                         ),
+                                         hr ( ),
+                                         p (strong ("Coeficiente de Hurst")),
+                                         verbatimTextOutput ("hurst")
                                 )
                               )
                             )

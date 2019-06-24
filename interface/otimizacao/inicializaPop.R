@@ -1,5 +1,5 @@
 geraIndividuo = function (entrada, lags, nS) {
-  nINDIVIDUO = sum (lags) * 12
+  nINDIVIDUO = (sum (lags))*12
   individuoMIN = -1
   individuoMAX = 1
   individuo = runif (nINDIVIDUO, individuoMIN, individuoMAX)

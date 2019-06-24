@@ -15,7 +15,6 @@ entrada = function (dados) {
   
   lagANUAL = lagAnualSignificativo (serieAnualH)
   lagMENSAL = lagMensalSignificativo (serieH)
-  
   facAnualH = autocorrelacaoAnual (serieAnualH, 12)
   facMensalH = autocorrelacaoMensal (serieH, 12)
   

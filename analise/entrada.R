@@ -7,7 +7,7 @@ entrada = function (dados) {
   serieAnualH = apply (serieH, 1, sum)
   mediaH = apply (serieH, 2, mean)
   dpH = apply (serieH, 2, sd)
-  nH = length (serieH) / 12
+  nH = (length (serieH)) / 12
   
   serieHL = log (serieH)
   mediaHL = apply (serieHL, 2, mean)

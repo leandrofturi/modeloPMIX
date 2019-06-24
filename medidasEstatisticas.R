@@ -3,12 +3,15 @@ Hurst = function (serie) {
   media = mean (serie)
   serieNormalizada = serie - media
   
-  somaAcumulada = sapply (1:n, function (x)
-                               sum (serieNormalizada[1:x]))
+  somaAcumulada = numeric (n)
+  somaAcumulada[1] = serieNormalizada[1]
+  for (i in 2:n) {
+    somaAcumulada[i] = somaAcumulada[i-1] + serieNormalizada[i]
+  }
 
   R = max (somaAcumulada) - min (somaAcumulada)
   S =  sd (serie)
-  Hurst = log (R/S) / (log((n)/2))
+  Hurst = log (R/S) / (log ((n)/2))
   
   return (Hurst)
 }

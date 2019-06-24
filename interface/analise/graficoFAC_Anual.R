@@ -4,11 +4,11 @@ inicializaGraficoFACANUAL = function (serieH, lagMax) {
   axis (1, 1:lagMax, 1:lagMax)
   axis (2, -1:1, c (-1, 0, 1))
   par (lty = 1)
-  lines (1:12, rep(0, 12))
+  lines (1:12, rep (0, 12))
   intConfianca = 1.96 / sqrt (length (serieH) / 12)
   par (lty = 2)
-  lines (1:12, rep(intConfianca, 12))
-  lines (1:12, rep(-intConfianca, 12))
+  lines (1:12, rep (intConfianca, 12))
+  lines (1:12, rep (-intConfianca, 12))
   box ( )
 }
 

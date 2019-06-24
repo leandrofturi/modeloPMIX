@@ -38,8 +38,9 @@ estouro = function (momentos) {
       (min (is.finite (momentos$dp))) &&
       (min (is.finite (momentos$facAnual))) &&
       (min (is.finite (momentos$facMensal))) &&
-      (min (is.finite (momentos$somRes))))
+      (min (is.finite (momentos$somRes)))) {
     return (FALSE)
+  }
   
   return (TRUE)
 }

@@ -2,7 +2,7 @@ autocorrelacaoMensal = function (serie, lagMax) {
   n = nrow (serie)
   
   if (lagMax > n) {
-    return ( );
+    return (NULL);
   }
   
   mPer = apply (serie, 2, mean)

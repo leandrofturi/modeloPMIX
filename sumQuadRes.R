@@ -88,7 +88,6 @@ residuos = function (serie, parametros, lags) {
     residuo[t] = serieAux[t] - autoMensal - autoAnual + autoMensalAnual + mmMensal + mmAnual - mmMensalAnual
   }
   residuo = matrix (residuo, ncol = ncol (serie), byrow = T)
-  
   dpRes = apply (residuo, 2, sd)
   somQuadRes = sum (residuo * residuo)
   

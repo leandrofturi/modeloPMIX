@@ -14,7 +14,7 @@ FNS = function (populacao) {
   return (np)
 }
 
-# ANALISA SE UM TERMO DOMINA PELO MENOS EM 4 AVALIACOES SOBRE OUTRO
+# ANALISA SE UM TERMO DOMINA EM PELO MENOS 4 AVALIACOES SOBRE OUTRO
 dominanciaCompleta = function (termo, populacao) {
   lapply (populacao, function (x)
                      if (

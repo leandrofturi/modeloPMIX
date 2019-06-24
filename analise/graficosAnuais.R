@@ -3,10 +3,24 @@ source ('correlograma.R')
 source ('sumQuadRes.R')
 source ('cenarioSintetico.R')
 
-fileSerieH = file.choose ( )
+# INTERPRETACAO LINHA POR LINHA
+
+sistema = Sys.info ( )['sysname']
+if (sistema == "Linux")
+  require ('tcltk')
+
+if (sistema == "Linux")
+  fileSerieH = tk_choose.files ( )
+if (sistema == "Windows")
+  fileSerieH = file.choose ( )
+
 serieH = entrada (fileSerieH)$serieH
 
-fileSerieAG = file.choose ( )
+if (sistema == "Linux")
+  fileSerieAG = tk_choose.files ( )
+if (sistema == "Windows")
+  fileSerieAG = file.choose ( )
+
 serieAG = read.csv2 (fileSerieAG, header = T, sep = ";", dec = ",")
 serieAG = serieAG[, -1]
 serieAG = as.matrix (serieAG)
@@ -14,7 +28,11 @@ serieAG = as.matrix (serieAG)
 lags = c (1,0,0,0)
 lags = c (1,1,0,0)
 lags = c (1,1,1,1)
-fileParametrosP = file.choose ( )
+if (sistema == "Linux")
+  fileParametrosP = tk_choose.files ( )
+if (sistema == "Windows")
+  fileParametrosP = file.choose ( )
+
 parametrosP = read.csv2 (fileParametrosP, header = T, sep = ";", dec = ",")
 parametrosP = parametrosP[, -1]
 parametrosP = as.matrix (parametrosP)
@@ -25,10 +43,11 @@ graficoFACAnual ( )
 graficoFACMensal ( )
 
 graficoFACAnual = function ( ) {
+  lagMax = 12
   png (file = paste0 ("FACAnual", lags[1], lags[2], lags[3], lags[4], ".png"), width = 150, height = 100, units = "mm", res = 300)
   par (lwd = 1, col= 'black')
   plot (NA, main = "Autocorrelações anuais", xlim = c (1, 12), ylim = c (-1, 1), xlab = "Lags", ylab = "Valores calculados", axes = F, type = "n")
-  axis (1, 1:12, 1:12)
+  axis (1, 1:lagMax, 1:lagMax)
   axis (2, -1:1, c (-1, 0, 1))
   par (lty = 1)
   lines (1:12, rep(0, 12))
@@ -39,9 +58,6 @@ graficoFACAnual = function ( ) {
   box ( )
   legend("bottomright", legend = c ("Histórico", "Powell", "Algoritmo Genético"),
          lty = 1, col = c ('gray40', 'deepskyblue4', 'darkblue'), bty="n", pch = 20)
-  
-  
-  lagMax = 12
     
   serieHAnual = apply (serieH, 1, sum)
   par (col = 'gray40', lty = 1)

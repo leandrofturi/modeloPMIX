@@ -3,7 +3,7 @@ plotSerie = function (serie) {
   plot (NA, main = "Serie Historica", xlim = c (1, 12), ylim = c (0, max (serie)), xlab = "", ylab = "Vazoes mensais (m^3/s)", axes = F, type = "n")
   axis (1, 1:12, c ("Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"))
   box ( )
-  par (col= 'gray70', pch = 16)
+  par (col = 'gray70', pch = 16)
   for (ano in (1: (length (serie) / 12))) {
     for (mes in (1:12))
       points (mes, serie[ano, mes])

@@ -5,7 +5,11 @@
 
 volumeUtil = function (Pregularizacao, M) {
   # O ARQUIVO E ESCOLHIDO DENTRO DO PROGRAMA
-  dados = choose.files ( )
+  if (sistema == "Linux")
+    dados = tk_choose.files ( )
+  else if (sistema == "Windows")
+    dados = choose.files ( )
+  
   serie = leituraSerie (dados)
   nS = length (serie)
   
@@ -15,9 +19,8 @@ volumeUtil = function (Pregularizacao, M) {
     periodo = rep (365, nS)
   
   periodo = periodo*24*60*60
-  tempoAcumulado = sapply (1:nS, function (x)
-                                 sum (periodo[1:x]))
-  volumeAcumulado = (serie - (mean (serie)*Pregularizacao))*tempoAcumulado
+  # tempoAcumulado = sapply (1:nS, function (x) sum (periodo[1:x]))
+  volumeAcumulado = (serie - (mean (serie)*Pregularizacao))*periodo
   
   pico = NULL
   i = 2
@@ -36,9 +39,8 @@ volumeUtil = function (Pregularizacao, M) {
     }
     i = i+1
   }
-  
-  final = list (picos = pico, picoMax = max (pico))
-  return (final)
+  picoMax = max (pico)
+  return (picoMax)
 }
 
 leituraSerie = function (dados) {
