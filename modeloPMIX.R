@@ -1,6 +1,6 @@
 source ('tempo.R')
 
-sistema = Sys.info ( )['sysname']
+sistema <<- Sys.info ( )['sysname']
 
 nSINTETICA <<- 10000
 nPopulacao = 50
