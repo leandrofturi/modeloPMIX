@@ -20,7 +20,13 @@ volumeUtil = function (Pregularizacao, M) {
   
   periodo = periodo*24*60*60
   # tempoAcumulado = sapply (1:nS, function (x) sum (periodo[1:x]))
-  volumeAcumulado = (serie - (mean (serie)*Pregularizacao))*periodo
+  volumePadronizado = (serie - (mean (serie)*Pregularizacao))*periodo
+  
+  volumeAcumulado = numeric (nS)
+  volumeAcumulado[1] = 0
+  for (i in 2:nS) {
+    volumeAcumulado[i] = volumePadronizado[i-1] + volumeAcumulado[i-1]
+  }
   
   pico = NULL
   i = 2
