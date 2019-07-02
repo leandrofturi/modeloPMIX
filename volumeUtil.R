@@ -22,9 +22,9 @@ volumeUtil = function (Pregularizacao, M) {
   # tempoAcumulado = sapply (1:nS, function (x) sum (periodo[1:x]))
   volumePadronizado = (serie - (mean (serie)*Pregularizacao))*periodo
   
-  volumeAcumulado = numeric (nS)
+  volumeAcumulado = numeric (nS+1)
   volumeAcumulado[1] = 0
-  for (i in 2:nS) {
+  for (i in 2:(nS+1)) {
     volumeAcumulado[i] = volumePadronizado[i-1] + volumeAcumulado[i-1]
   }
   
@@ -37,7 +37,7 @@ volumeUtil = function (Pregularizacao, M) {
         if (((volumeAcumulado[j] > volumeAcumulado[j-1]) && (volumeAcumulado[j] > volumeAcumulado[j+1])) && 
             (volumeAcumulado[j] > volumeAcumulado[i])) {
           pico = c (pico, volumeAcumulado[i] - min (volumeAcumulado[i:j]))
-          i = j
+          i = j-1
           j = nS
         }
         j = j+1
