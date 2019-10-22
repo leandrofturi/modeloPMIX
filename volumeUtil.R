@@ -3,6 +3,8 @@
 # Pregularizacao: Porcentagem da vazao de regularizacao utilizada (0 a 1)
 # M: TRUE caso a serie seja mensal, FALSE para anual
 
+sistema <<- Sys.info ( )['sysname']
+
 volumeUtil = function (Pregularizacao, M) {
   # O ARQUIVO E ESCOLHIDO DENTRO DO PROGRAMA
   if (sistema == "Linux")
@@ -21,13 +23,11 @@ volumeUtil = function (Pregularizacao, M) {
   periodo = periodo*24*60*60
   # tempoAcumulado = sapply (1:nS, function (x) sum (periodo[1:x]))
   volumePadronizado = (serie - (mean (serie)*Pregularizacao))*periodo
-  
-  volumeAcumulado = numeric (nS+1)
+  volumeAcumulado = numeric (nS)
   volumeAcumulado[1] = 0
-  for (i in 2:(nS+1)) {
+  for (i in 2:nS) {
     volumeAcumulado[i] = volumePadronizado[i-1] + volumeAcumulado[i-1]
   }
-  
   pico = NULL
   i = 2
   while (i < (nS-1)) {
@@ -36,7 +36,7 @@ volumeUtil = function (Pregularizacao, M) {
       while (j < (nS-1)) {
         if (((volumeAcumulado[j] > volumeAcumulado[j-1]) && (volumeAcumulado[j] > volumeAcumulado[j+1])) && 
             (volumeAcumulado[j] > volumeAcumulado[i])) {
-          pico = c (pico, volumeAcumulado[i] - min (volumeAcumulado[i:j]))
+          pico = c (pico, (volumeAcumulado[i] - (min (volumeAcumulado[i:j]))))
           i = j-1
           j = nS
         }

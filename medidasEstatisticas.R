@@ -4,9 +4,8 @@ Hurst = function (serie) {
   serieNormalizada = serie - media
   
   somaAcumulada = numeric (n)
-  somaAcumulada[1] = serieNormalizada[1]
-  for (i in 2:n) {
-    somaAcumulada[i] = somaAcumulada[i-1] + serieNormalizada[i]
+  for (i in 2:(n+1)) {
+    somaAcumulada[i] = somaAcumulada[i-1] + serieNormalizada[i-1]
   }
 
   R = max (somaAcumulada) - min (somaAcumulada)
