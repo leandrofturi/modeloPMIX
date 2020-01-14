@@ -1,4 +1,5 @@
 function (input, output, session) {
+  
   output$parametros = renderPrint ({
     if (input$tipo == 1) {
       print ("Metodo de Powell")
@@ -41,11 +42,11 @@ function (input, output, session) {
       serieS = funcaoAlgoritmo ( )$arqSeries
       if (input$tipo == 2) {
         serieS = serieS[[as.numeric (input$nSerie)]]
-        print(serieS)
       }
     }
-    else
+    else {
       serieS = leituraSerie ( ) [[as.numeric (input$nSerieA)]]
+    }
 
     return (serieS)
   })
@@ -59,11 +60,44 @@ function (input, output, session) {
                                                        read.csv2 (x, header = input$headerA,
                                                        sep = input$sepA,
                                                        dec = input$decA))
-    arqSeries = lapply (arqSeries, function (x)
-                                   x[ ,-1])
+    arqSeries = lapply (arqSeries, function (x) {
+                                     if (ncol (x) > 12) return (x[ ,-1])
+                                     else return (x)
+                                   })
     serieS = lapply (arqSeries, function (x)
                                 as.matrix (x))
     return (serieS)
+  })
+  
+  avaliacoes = reactive ({
+    mediaH = apply (serieHist ( ), 2, mean)
+    dpH = apply (serieHist ( ), 2, sd)
+    facAnualH = autocorrelacaoAnual (serieHist ( ), 12)[-1]
+    facMensalH = autocorrelacaoMensal (serieHist ( ), 12)[-1, ]
+    
+    MAPEMedia = NULL
+    MAPEDesvio = NULL
+    MAPEFacAnual = NULL
+    MAPEFacMensal = NULL
+    
+    avaliacoes = lapply (leituraSerie ( ), function (x) {
+      mediaS = apply (x, 2, mean)
+      dpS = apply (x, 2, sd)
+      facAnualS = autocorrelacaoAnual (x, 12)[-1]
+      facMensalS = autocorrelacaoMensal (x, 12)[-1, ]
+      
+      MAPEMedia = sum (abs ((mediaH - mediaS) / mediaH)) / 12
+      MAPEDesvio = sum (abs ((dpH - dpS)) / dpH) / 12
+      MAPEFacAnual = sum (abs ((facAnualH - facAnualS) / facAnualH)) / 12
+      MAPEFacMensal = sum (abs ((facMensalH - facMensalS) / facMensalH)) / (12*12)
+      c (MAPEMedia, MAPEDesvio, MAPEFacAnual, MAPEFacMensal)
+    })
+    
+    avaliacoes = matrix (unlist (avaliacoes), ncol = 4, byrow = T)
+    avaliacoes = data.frame (avaliacoes)
+    colnames (avaliacoes) = c ("MAPE media", "MAPE desvio", "MAPE FAC anual", "MAPE FAC mensal")
+    rownames (avaliacoes) = paste ("Serie", 1:length (input$serieArquivada$datapath))
+    return (avaliacoes)
   })
   
   output$resultadoGeral = renderPrint ({
@@ -183,41 +217,14 @@ function (input, output, session) {
       }
       else {
         avaliacoes = data.frame (funcaoAlgoritmo ( )$arqAvaliacoes)
-        colnames (avaliacoes) = c ("MAPE media", "MAPE desvio", "MAPE FAC anual", "MAPE FAC mensal", "Soma Residual")
+        colnames (avaliacoes) = c ("Serie", "MAPE media", "MAPE desvio", "MAPE FAC anual", "MAPE FAC mensal", "Soma Residual")
         rownames (avaliacoes) = paste ("Serie", 1:input$nPop)
         return (datatable (avaliacoes))
       }
     }
     
     else if ((input$analise == 2) && (length (input$serieArquivada$datapath) > 0)) {
-      mediaH = apply (serieHist ( ), 2, mean)
-      dpH = apply (serieHist ( ), 2, sd)
-      facAnualH = autocorrelacaoAnual (serieHist ( ), 12)[-1]
-      facMensalH = autocorrelacaoMensal (serieHist ( ), 12)[-1, ]
-      
-      MAPEMedia = NULL
-      MAPEDesvio = NULL
-      MAPEFacAnual = NULL
-      MAPEFacMensal = NULL
-      
-      avaliacoes = lapply (leituraSerie ( ), function (x) {
-        mediaS = apply (x, 2, mean)
-        dpS = apply (x, 2, sd)
-        facAnualS = autocorrelacaoAnual (x, 12)[-1]
-        facMensalS = autocorrelacaoMensal (x, 12)[-1, ]
-        
-        MAPEMedia = sum (abs ((mediaH - mediaS) / mediaH)) / 12
-        MAPEDesvio = sum (abs ((dpH - dpS)) / dpH) / 12
-        MAPEFacAnual = sum (abs ((facAnualH - facAnualS) / facAnualH)) / 12
-        MAPEFacMensal = sum (abs ((facMensalH - facMensalS) / facMensalH)) / (12*12)
-        c (MAPEMedia, MAPEDesvio, MAPEFacAnual, MAPEFacMensal)
-      })
-      
-      avaliacoes = matrix (unlist (avaliacoes), ncol = 4, byrow = T)
-      avaliacoes = data.frame (avaliacoes)
-      colnames (avaliacoes) = c ("MAPE media", "MAPE desvio", "MAPE FAC anual", "MAPE FAC mensal")
-      rownames (avaliacoes) = paste ("Serie", 1:length (input$serieArquivada$datapath))
-      return (datatable (avaliacoes))
+      return (datatable (avaliacoes ()))
     }
   })
   
@@ -313,6 +320,34 @@ function (input, output, session) {
       write.table (data.frame (serieEscolhida ( )), file,
                    col.names = c ("Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"),
                    row.names = F,
+                   sep = input$sep,
+                   dec = input$dec)
+    }
+  )
+  
+  output$downloadTabelaAnual = downloadHandler (
+    filename = function ( ) {
+      paste0 ("serie_", input$nSerie, "FACAnual", ".csv")
+    },
+    content = function (file) {
+      tabela = data.frame (autocorrelacaoAnual (apply (serieEscolhida ( ), 1, sum), 12))
+      colnames (tabela) = c (("FAC"))
+      rownames (tabela) = c (paste ("lag", 0:12))
+      write.table (tabela, file, col.names = NA, row.names = T,
+                   sep = input$sep,
+                   dec = input$dec)
+    }
+  )
+  
+  output$downloadTabelaMensal = downloadHandler (
+    filename = function ( ) {
+      paste0 ("serie_", input$nSerie, "FACMensal", ".csv")
+    },
+    content = function (file) {
+      tabela = data.frame (autocorrelacaoMensal (serieEscolhida ( ), 12))
+      colnames (tabela) = c ("Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez")
+      rownames (tabela) = c (paste ("lag", 0:12))
+      write.table (tabela, file, col.names = NA, row.names = T,
                    sep = input$sep,
                    dec = input$dec)
     }

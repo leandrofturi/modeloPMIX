@@ -133,13 +133,15 @@ navbarPage ("PMIX (p,q,P,Q)",
                                 tabPanel("Graficos FAC anuais",
                                          br ( ),
                                          plotOutput("FACAnuais"),
-                                         dataTableOutput("tabelaAnual")
+                                         dataTableOutput("tabelaAnual"),
+                                         downloadButton ("downloadTabelaAnual", "Download", icon ("save"))
                                 ),
                                 tabPanel("Graficos FAC mensais",
                                          br ( ),
                                          selectInput ("lagMensalMAX", "lag mensal analisado:", choices = 1:12, selected = 1),
                                          plotOutput ("FACMensais"),
-                                         dataTableOutput ("tabelaMensal")
+                                         dataTableOutput ("tabelaMensal"),
+                                         downloadButton ("downloadTabelaMensal", "Download", icon ("save"))
                                 ),
                                 tabPanel("Medidas",
                                          br ( ),
